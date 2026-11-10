@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { unlockPhone } from "./support/unlock";
 import { readFileSync } from "node:fs";
 import { compileStory } from "../src/story-engine/compiler";
 test.use({ hasTouch: true });
@@ -13,7 +14,7 @@ async function start(page: Page) {
     r.fulfill({ json: compileStory(fixture).work }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
 }
 async function open(page: Page, name: string) {
   await page.getByRole("button", { name: "打开App Store", exact: true }).click();
@@ -98,7 +99,7 @@ test("Mymy Instagram comments, likes, profile, stories and X interaction persist
   );
   await home(page);
   await page.reload();
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await open(page, "Instagram");
   await page.getByRole("button", { name: "主页", exact: true }).click();
   await expect(

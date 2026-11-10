@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { unlockPhone } from "./support/unlock";
 import { readFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { compileStory } from "../src/story-engine/compiler";
@@ -75,7 +76,7 @@ test("missing original image safely falls back without losing app action", async
   test.skip(!probe.ok(), "公开构建不带本地图标");
   await page.route("**/icon-assets/photos.png", (r) => r.abort());
   await page.goto("/");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(
     page.getByRole("button", { name: "打开相册", exact: true }).locator("svg"),
   ).toBeVisible();

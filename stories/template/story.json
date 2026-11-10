@@ -3,14 +3,15 @@
   "id": "foundphone-left",
   "title": "妈妈",
   "description": "2039 年 9 月 10 日，zx 与 left 的两段对话。",
-  "revision": 1,
+  "revision": 3,
   "phone": {
     "owner": "zx",
     "date": "2039-09-10",
     "time": "23:36",
     "battery": 46,
     "network": "5G",
-    "wallpaper": "apple-wwdc26"
+    "wallpaper": "apple-wwdc26",
+    "passcode": "1119"
   },
   "installedApps": [
     "appstore",
@@ -91,6 +92,13 @@
     {
       "id": "left",
       "name": "left",
+      "phone": "",
+      "avatar": "",
+      "bio": ""
+    },
+    {
+      "id": "goudongxi",
+      "name": "狗东西",
       "phone": "",
       "avatar": "",
       "bio": ""
@@ -247,6 +255,16 @@
           "read": true
         }
       ]
+    },
+    {
+      "id": "chat-goudongxi-20270910",
+      "app": "wechat",
+      "title": "狗东西",
+      "participants": [
+        "owner",
+        "goudongxi"
+      ],
+      "messages": []
     }
   ],
   "content": {
@@ -262,6 +280,26 @@
         "meta": {
           "pinned": "true"
         }
+      },
+      {
+        "id": "note-20390913",
+        "title": "",
+        "body": "他就这么让我留下来了，真好骗。他看上去生活得不错，凭什么呢，我已经毁掉的人生，可都要归功于你啊妈妈。",
+        "time": "2039-09-13 20:00",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20390911",
+        "title": "",
+        "body": "我见到他了，地址是真的。在他门前的时候我居然有点紧张。他明明不认识我，看见我的瞬间却下意识关上了门。是因为我长着和那狗东西一样的脸吗？烦。\n他怎么这么年轻。",
+        "time": "2039-09-11 02:00",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
       }
     ]
   },

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { unlockPhone } from "./support/unlock";
 import { readFileSync } from "node:fs";
 import { compileStory } from "../src/story-engine/compiler";
 const blank = JSON.parse(
@@ -44,7 +45,7 @@ async function enter(page: Page) {
     r.fulfill({ json: compileStory(story).work }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
 }
 async function open(page: Page, name: string) {
   await page
@@ -132,7 +133,7 @@ test("Threads reference messages activity menu and composer persist local posts"
   await page.getByRole("button", { name: "发布", exact: true }).click();
   await expect(page.locator(".tr-scroll")).toContainText("本地串文测试");
   await page.reload();
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await open(page, "Threads");
   await expect(page.locator(".tr-scroll")).toContainText("本地串文测试");
 });

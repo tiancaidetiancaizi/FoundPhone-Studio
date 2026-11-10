@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { unlockPhone } from "./support/unlock";
 test("published default story, four dock apps and updated status bar", async ({
   page,
   request,
@@ -32,7 +33,7 @@ test("published default story, four dock apps and updated status bar", async ({
   await page
     .locator(".phone-screen")
     .screenshot({ path: "docs/images/lock.png" });
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(page.locator(".lock-screen")).toHaveCount(0);
   await expect(page.locator(".interactive-home")).toHaveCSS("opacity", "1");
   await expect(page.locator(".dock [data-home-key]")).toHaveCount(4);
@@ -81,7 +82,7 @@ test("published default story, four dock apps and updated status bar", async ({
     .locator(".phone-screen")
     .screenshot({ path: "docs/images/settings.png" });
   await page.reload();
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(page.locator(".dock [data-home-key]")).toHaveCount(4);
   expect(
     await page.evaluate(

@@ -12,6 +12,7 @@ test.beforeEach(async ({ page }) => {
   );
 });
 import { test, expect, type Page } from "@playwright/test";
+import { unlockPhone } from "./support/unlock";
 async function home(page: Page) {
   await page.getByRole("button", { name: "返回桌面", exact: true }).click();
   await expect(
@@ -37,7 +38,7 @@ test("direct player, settings stack and toggle, system screenshots", async ({
   await page
     .locator(".phone-screen")
     .screenshot({ path: "outputs/v0.6/lock.png" });
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(
     page.getByRole("button", { name: "打开设置", exact: true }),
   ).toBeVisible();
@@ -93,7 +94,7 @@ for (const [choice, ending] of [
     "example puzzle, call, ending and persisted save: " + choice,
     async ({ page }) => {
       await page.goto("/");
-      await page.getByRole("button", { name: "轻触解锁" }).click();
+      await unlockPhone(page);
       await open(page, "微信");
       await page
         .locator(".wx-chat-row")
@@ -143,14 +144,14 @@ for (const [choice, ending] of [
         .screenshot({ path: `outputs/v0.6/ending-${choice}.png` });
       await page.reload();
       await expect(page.locator(".lock-clock-block")).toContainText("10月24日");
-      await page.getByRole("button", { name: "轻触解锁" }).click();
+      await unlockPhone(page);
       await expect(page.getByText(ending, { exact: true })).toBeVisible();
     },
   );
 test("mobile viewport, no overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(
     page.getByRole("button", { name: "打开设置", exact: true }),
   ).toBeVisible();
@@ -170,7 +171,7 @@ test("production PWA cached story works after offline reload", async ({
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     await context.setOffline(true);
     await page.reload();
-    await page.getByRole("button", { name: "轻触解锁" }).click();
+    await unlockPhone(page);
     await open(page, "设置");
     await expect(page.getByRole("switch", { name: "飞行模式" })).toBeVisible();
     await page
@@ -193,7 +194,7 @@ test("blank phone contains no story or author content", async ({
   expect(w.description).toBe("");
   expect(w.mode).toBe("explore");
   await page.goto("/?template=blank");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await expect(page.getByText("林知夏", { exact: true })).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "打开设置", exact: true }),
@@ -211,7 +212,7 @@ test("reference-calibrated settings, WeChat pages and control center", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "轻触解锁" }).click();
+  await unlockPhone(page);
   await open(page, "设置");
   const screen = await page.locator(".phone-screen").boundingBox();
   const search = await page.locator(".settings-search").boundingBox();

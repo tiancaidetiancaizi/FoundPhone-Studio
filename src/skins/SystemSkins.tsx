@@ -365,21 +365,26 @@ export function NotesSkin(p: Props) {
     : items;
   const pinned = list.filter((i) => i.meta?.pinned === "true");
   const rest = list.filter((i) => i.meta?.pinned !== "true");
-  const noteRow = (i: Item) => (
-    <button key={i.id} onClick={() => p.onItem(i)}>
-      <strong>
-        {i.password && <LockKeyhole size={12} />} {i.title}
-      </strong>
-      <p>
-        <time>{i.time.slice(5, 10)}</time>{" "}
-        {i.password ? "已锁定的备忘录" : i.body.split("\n")[0]}
-      </p>
-      <small>{i.folder}</small>
-      {i.meta?.pinned === "true" && (
-        <Pin size={12} className="note-pin" aria-label="置顶" />
-      )}
-    </button>
-  );
+  const noteRow = (i: Item) => {
+    const lines = i.body.split("\n");
+    const heading = i.title || lines[0] || "";
+    const preview = i.title ? lines[0] : lines.slice(1).join(" ").trim();
+    return (
+      <button key={i.id} onClick={() => p.onItem(i)}>
+        <strong>
+          {i.password && <LockKeyhole size={12} />} {heading}
+        </strong>
+        <p>
+          <time>{i.time.slice(5, 10)}</time>{" "}
+          {i.password ? "已锁定的备忘录" : preview}
+        </p>
+        <small>{i.folder}</small>
+        {i.meta?.pinned === "true" && (
+          <Pin size={12} className="note-pin" aria-label="置顶" />
+        )}
+      </button>
+    );
+  };
   return (
     <div className="catalog-skin native-notes">
       <Header p={p} />
