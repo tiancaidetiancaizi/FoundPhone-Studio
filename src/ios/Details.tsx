@@ -145,6 +145,9 @@ export function NativeDetail({
           <div className="native-detail-scroll native-note-paper">
             <time>{item.time}</time>
             <h1>{item.title}</h1>
+            {media && (
+              <img className="native-note-image" src={media} alt={item.title} />
+            )}
             <RichText value={item.richText} fallback={item.body} />
           </div>
           <footer className="native-detail-toolbar">

@@ -19,6 +19,7 @@ import {
   MapPin,
   Music,
   Phone,
+  Pin,
   Search,
   SkipForward,
   Star,
@@ -362,6 +363,23 @@ export function NotesSkin(p: Props) {
   const list = folder
     ? items.filter((i) => (i.folder || "备忘录") === folder)
     : items;
+  const pinned = list.filter((i) => i.meta?.pinned === "true");
+  const rest = list.filter((i) => i.meta?.pinned !== "true");
+  const noteRow = (i: Item) => (
+    <button key={i.id} onClick={() => p.onItem(i)}>
+      <strong>
+        {i.password && <LockKeyhole size={12} />} {i.title}
+      </strong>
+      <p>
+        <time>{i.time.slice(5, 10)}</time>{" "}
+        {i.password ? "已锁定的备忘录" : i.body.split("\n")[0]}
+      </p>
+      <small>{i.folder}</small>
+      {i.meta?.pinned === "true" && (
+        <Pin size={12} className="note-pin" aria-label="置顶" />
+      )}
+    </button>
+  );
   return (
     <div className="catalog-skin native-notes">
       <Header p={p} />
@@ -385,20 +403,15 @@ export function NotesSkin(p: Props) {
             ))}
           </div>
         )}
-        <div className="notes-list">
-          {list.map((i) => (
-            <button key={i.id} onClick={() => p.onItem(i)}>
-              <strong>
-                {i.password && <LockKeyhole size={12} />} {i.title}
-              </strong>
-              <p>
-                <time>{i.time.slice(5, 10)}</time>{" "}
-                {i.password ? "已锁定的备忘录" : i.body.split("\n")[0]}
-              </p>
-              <small>{i.folder}</small>
-            </button>
-          ))}
-        </div>
+        {pinned.length > 0 && (
+          <>
+            <div className="notes-section-label">置顶</div>
+            <div className="notes-list">{pinned.map(noteRow)}</div>
+          </>
+        )}
+        {rest.length > 0 && (
+          <div className="notes-list">{rest.map(noteRow)}</div>
+        )}
         <Empty items={list} />
       </div>
       <div className="notes-footer">

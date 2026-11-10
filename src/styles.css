@@ -3971,6 +3971,12 @@ label {
   font-size: 9px;
   margin: 2px 0 24px;
 }
+.skin-time-sep {
+  text-align: center;
+  color: #aaa;
+  font-size: 9px;
+  margin: 4px 0 16px;
+}
 .skin-message {
   display: flex;
   align-items: flex-start;

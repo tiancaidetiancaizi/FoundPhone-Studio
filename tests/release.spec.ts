@@ -1,17 +1,24 @@
 import { test, expect } from "@playwright/test";
-test("published default matches full test preview, four dock apps and updated status bar", async ({
+test("published default story, four dock apps and updated status bar", async ({
   page,
   request,
 }) => {
   const work = await (await request.get("/work.json")).json();
-  const preview = await (await request.get("/test-work.json")).json();
-  expect(work.id).toBe("ui-test-phone-v2");
-  expect(work.apps).toEqual(preview.apps);
-  expect(work.data).toEqual(preview.data);
+  expect(work.id).toBe("foundphone-left");
+  expect(work.title).toBe("妈妈");
   expect(
     work.apps.filter((a: { installed: boolean }) => a.installed),
   ).toHaveLength(49);
   expect(work.nodes).toHaveLength(0);
+  const leftThread = (work.data.wechat ?? []).filter(
+    (i: { title: string }) => i.title === "left",
+  );
+  expect(leftThread).toHaveLength(20);
+  expect(
+    (work.data.notes ?? []).some(
+      (n: { meta?: Record<string, string> }) => n.meta?.pinned === "true",
+    ),
+  ).toBe(true);
   expect(
     work.apps.filter(
       (a: { installed: boolean; dock: boolean }) => a.installed && a.dock,

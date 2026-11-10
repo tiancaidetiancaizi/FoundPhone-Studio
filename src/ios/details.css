@@ -59,6 +59,14 @@
   font-weight: 700;
   margin: 0 0 14px;
 }
+.native-note-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 16px;
+  border-radius: 10px;
+  object-fit: cover;
+}
 .ios18 .native-detail-notes .app-nav button,
 .ios18 .native-detail-notes .native-detail-toolbar button {
   color: #bf8500;
