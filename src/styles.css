@@ -3977,6 +3977,15 @@ label {
   font-size: 9px;
   margin: 4px 0 16px;
 }
+.skin-call-log {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #a0a0a0;
+  font-size: 9px;
+  margin: 0 0 18px;
+}
 .skin-message {
   display: flex;
   align-items: flex-start;

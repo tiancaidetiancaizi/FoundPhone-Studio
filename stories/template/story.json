@@ -3,7 +3,7 @@
   "id": "foundphone-left",
   "title": "妈妈",
   "description": "2039 年 9 月 10 日，zx 与 left 的两段对话。",
-  "revision": 3,
+  "revision": 4,
   "phone": {
     "owner": "zx",
     "date": "2039-09-10",
@@ -264,7 +264,192 @@
         "owner",
         "goudongxi"
       ],
-      "messages": []
+      "messages": [
+        {
+          "id": "gd-01",
+          "body": "语音通话 01:09",
+          "senderId": "owner",
+          "time": "2027-05-10 19:40",
+          "kind": "call",
+          "read": true
+        },
+        {
+          "id": "gd-02",
+          "body": "爸爸，你什么时候来接我？",
+          "senderId": "owner",
+          "time": "2027-05-10 19:52",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-03",
+          "body": "我害怕",
+          "senderId": "owner",
+          "time": "2027-05-10 19:53",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-04",
+          "body": "哭哭哭！你他妈一天天除了哭还会干什么？",
+          "senderId": "goudongxi",
+          "time": "2027-05-10 20:37",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-05",
+          "body": "跟你那个没良心的妈一个德行，真给老子添晦气！",
+          "senderId": "goudongxi",
+          "time": "2027-05-10 20:38",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-06",
+          "body": "老子打完这把自然过去接你，再嚎你就在外边待一辈子吧！",
+          "senderId": "goudongxi",
+          "time": "2027-05-10 20:41",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-07",
+          "body": "个兔崽子还学会报警了是吧？",
+          "senderId": "goudongxi",
+          "time": "2028-09-24 21:10",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-08",
+          "body": "等老子回去的",
+          "senderId": "goudongxi",
+          "time": "2028-09-24 21:11",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-09",
+          "body": "有种你别进老子家门",
+          "senderId": "goudongxi",
+          "time": "2028-09-24 21:13",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-10",
+          "body": "你能不能少喝点",
+          "senderId": "owner",
+          "time": "2034-12-01 22:40",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-11",
+          "body": "电话都打到老师那里了",
+          "senderId": "owner",
+          "time": "2034-12-01 22:41",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-12",
+          "body": "轮不到你管老子",
+          "senderId": "goudongxi",
+          "time": "2034-12-01 23:05",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-13",
+          "body": "一天到晚摆起个死人脸给谁看？",
+          "senderId": "goudongxi",
+          "time": "2034-12-01 23:06",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-14",
+          "body": "我告诉你，别跟你妈一样装清高，你们他妈都不是好东西！",
+          "senderId": "goudongxi",
+          "time": "2034-12-01 23:08",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-15",
+          "body": "老子不要吃饭不要住的啊",
+          "senderId": "goudongxi",
+          "time": "2036-09-16 18:20",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-16",
+          "body": "老子没同意你去住校，滚回来！",
+          "senderId": "goudongxi",
+          "time": "2036-09-16 18:21",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-17",
+          "body": "白眼狼！白养你！",
+          "senderId": "goudongxi",
+          "time": "2036-09-16 18:23",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-18",
+          "body": "我不需要你同意",
+          "senderId": "owner",
+          "time": "2036-09-16 19:02",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-19",
+          "body": "语音通话 已拒绝",
+          "senderId": "goudongxi",
+          "time": "2036-09-16 19:03",
+          "kind": "call",
+          "read": true
+        },
+        {
+          "id": "gd-20",
+          "body": "听说你现在在兼职？",
+          "senderId": "goudongxi",
+          "time": "2037-11-17 12:40",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-21",
+          "body": "给你老爹我转五百块钱",
+          "senderId": "goudongxi",
+          "time": "2037-11-17 12:41",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-22",
+          "body": "别给老子装看不见，老子知道你在哪上班",
+          "senderId": "goudongxi",
+          "time": "2037-11-17 18:55",
+          "kind": "text",
+          "read": true
+        },
+        {
+          "id": "gd-23",
+          "body": "你来",
+          "senderId": "owner",
+          "time": "2037-11-17 21:30",
+          "kind": "text",
+          "read": true
+        }
+      ]
     }
   ],
   "content": {
@@ -296,6 +481,56 @@
         "title": "",
         "body": "我见到他了，地址是真的。在他门前的时候我居然有点紧张。他明明不认识我，看见我的瞬间却下意识关上了门。是因为我长着和那狗东西一样的脸吗？烦。\n他怎么这么年轻。",
         "time": "2039-09-11 02:00",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20360916",
+        "title": "",
+        "body": "申请了住校，应该不会再回去了。\n我带上了他的照片。",
+        "time": "2036-09-16 21:40",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20360907",
+        "title": "",
+        "body": "找到一份工作。",
+        "time": "2036-09-07 15:30",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20341202",
+        "title": "",
+        "body": "狗东西说他最后悔的是没能掐死左航和我。我现在最后悔的是我不能把他的头溺在马桶里。",
+        "time": "2034-12-02 22:05",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20341201",
+        "title": "",
+        "body": "老师看到我的胳膊了，还有后背。其实那块皮已经没什么感觉了，但她那种眼神让我很不舒服。我的存在只是世界不小心长了一个脓包。",
+        "time": "2034-12-01 20:10",
+        "folder": "备忘录",
+        "kind": "text",
+        "media": "",
+        "meta": {}
+      },
+      {
+        "id": "note-20280927",
+        "title": "",
+        "body": "我居然没死。好痛。\n妈妈，你为什么不带我走。",
+        "time": "2028-09-27 03:40",
         "folder": "备忘录",
         "kind": "text",
         "media": "",

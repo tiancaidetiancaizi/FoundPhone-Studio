@@ -372,7 +372,8 @@ export function NotesSkin(p: Props) {
     return (
       <button key={i.id} onClick={() => p.onItem(i)}>
         <strong>
-          {i.password && <LockKeyhole size={12} />} {heading}
+          {i.password && <LockKeyhole size={12} />}{" "}
+          <span className="note-title">{heading}</span>
         </strong>
         <p>
           <time>{i.time.slice(5, 10)}</time>{" "}
