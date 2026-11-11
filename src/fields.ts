@@ -84,7 +84,7 @@ const fields: Record<string, Field[]> = {
     { key: "votes", label: "虚构投票数", type: "number" },
   ],
   forum: [
-    { key: "views", label: "虚构浏览数", type: "number" },
+    { key: "views", label: "浏览数", type: "number" },
     { key: "status", label: "帖子状态" },
   ],
   twitter: [
