@@ -12,6 +12,8 @@ import {
   Home,
   MessageCircle,
   Repeat2,
+  Search,
+  Trash2,
   User,
   Users,
   Share2,
@@ -327,12 +329,15 @@ export function FacebookSkin(p: Props) {
 }
 export function RedbookSkin(p: Props) {
   const { tab, setTab, q, setQ, items } = useContent(p, "发现");
+  const [showHistory, setShowHistory] = useState(true);
+  const history = p.items.filter((i) => meta(i, "history") === "true");
+  const posts = items.filter((i) => meta(i, "history") !== "true");
   const list =
     tab === "收藏"
-      ? items.filter((i) => i.favorite)
+      ? posts.filter((i) => i.favorite)
       : tab === "关注"
-        ? items.filter((i) => i.folder === "关注")
-        : items;
+        ? posts.filter((i) => i.folder === "关注")
+        : posts;
   return (
     <div className="catalog-skin redbook-ui">
       <Header p={p} />
@@ -348,7 +353,32 @@ export function RedbookSkin(p: Props) {
         ))}
       </div>
       <div className="catalog-scroll">
-        <SearchBox value={q} set={setQ} />
+        <SearchBox value={q} set={setQ} placeholder="搜索笔记" />
+        {tab === "发现" && history.length > 0 && showHistory && (
+          <div className="rb-history">
+            <div className="rb-history-head">
+              <strong>历史记录</strong>
+              <button
+                aria-label="清空搜索历史"
+                onClick={() => setShowHistory(false)}
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+            <div className="rb-history-list">
+              {history.map((i) => (
+                <button
+                  key={i.id}
+                  className="rb-history-chip"
+                  onClick={() => setQ(i.title)}
+                >
+                  <Search size={11} />
+                  {i.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="redbook-masonry">
           {list.map((i) => (
             <button key={i.id} onClick={() => p.onItem(i)}>
@@ -524,9 +554,16 @@ function RedditPost({ p, item: i }: { p: Props; item: Item }) {
 export function ForumSkin(p: Props) {
   const { tab, setTab, q, setQ, items } = useContent(p, "帖子");
   const [board, setBoard] = useState("");
+  const [draft, setDraft] = useState("");
   const list = board
     ? items.filter((i) => (i.folder || "未分类") === board)
     : items;
+  const mine = p.items.filter((i) => i.sender === p.owner);
+  const hasFeed = p.items.some((i) => (i.folder || "未分类") === "帖子");
+  const gated = !q && !board && !hasFeed;
+  const who = (i: Item) =>
+    meta(i, "anonymous") === "true" ? "匿名用户" : i.sender ?? "";
+  const submit = () => setQ(draft.trim());
   return (
     <div className="catalog-skin forum-ui">
       <Header p={p} />
@@ -536,9 +573,78 @@ export function ForumSkin(p: Props) {
         <span>{items.length} 个主题</span>
       </div>
       <div className="catalog-scroll">
-        <SearchBox value={q} set={setQ} />
-        {tab === "版块"
-          ? groupItems(items).map((g) => (
+        <div className="forum-search">
+          <label className="catalog-search">
+            <Search size={15} />
+            <input
+              aria-label="搜索帖子"
+              placeholder="搜索帖子"
+              value={draft}
+              onFocus={() => {
+                if (!draft && !q) setDraft("同城");
+              }}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submit();
+              }}
+            />
+          </label>
+          {(draft || q) && (
+            <button className="forum-search-go" onClick={submit}>
+              确定
+            </button>
+          )}
+        </div>
+        {q && (
+          <div className="forum-result">
+            搜索「{q}」· {list.length} 篇帖子
+            <button
+              onClick={() => {
+                setQ("");
+                setDraft("");
+              }}
+            >
+              清除
+            </button>
+          </div>
+        )}
+        {tab === "版块" ? (
+          <>
+            <div className="forum-me">
+              <Avatar name={p.owner ?? ""} />
+              <div>
+                <strong>{p.owner}</strong>
+                <small>
+                  {mine.length} 篇帖子 ·{" "}
+                  {mine.reduce((n, i) => n + i.comments.length, 0)} 条回复
+                </small>
+              </div>
+              <span className="forum-me-badge">本人</span>
+            </div>
+            {mine.length > 0 && (
+              <>
+                <h3 className="forum-section">我的帖子</h3>
+                {mine.map((i) => (
+                  <button
+                    className="forum-topic"
+                    key={i.id}
+                    onClick={() => p.onItem(i)}
+                  >
+                    <strong>
+                      {meta(i, "anonymous") === "true" && <em>匿名</em>}
+                      {i.title}
+                    </strong>
+                    <p>{i.body.split("\n")[0]}</p>
+                    <div>
+                      <span>{i.time.slice(5, 16)}</span>
+                      <span>{i.comments.length} 回复</span>
+                    </div>
+                  </button>
+                ))}
+              </>
+            )}
+            <h3 className="forum-section">版块</h3>
+            {groupItems(items).map((g) => (
               <button
                 className="forum-board"
                 key={g}
@@ -557,28 +663,41 @@ export function ForumSkin(p: Props) {
                 </div>
                 <ChevronRight size={16} />
               </button>
-            ))
-          : list.map((i) => (
-              <button
-                className="forum-topic"
-                key={i.id}
-                onClick={() => p.onItem(i)}
-              >
-                <strong>
-                  {meta(i, "status") && <em>{meta(i, "status")}</em>}
-                  {i.title}
-                </strong>
-                <p>{i.body.split("\n")[0]}</p>
-                <div>
-                  <span>
-                    {i.sender} · {i.time.slice(5, 16)}
-                  </span>
-                  <span>
-                    {meta(i, "views", "—")} 浏览 · {i.comments.length} 回复
-                  </span>
-                </div>
-              </button>
             ))}
+          </>
+        ) : (
+          <>
+            {gated && (
+              <div className="forum-invite">
+                <Hash size={24} />
+                <strong>同城 · 附近的人在聊什么</strong>
+                <small>在上方搜索「同城」，看看最近的帖子</small>
+              </div>
+            )}
+            {!gated &&
+              list.map((i) => (
+                <button
+                  className="forum-topic"
+                  key={i.id}
+                  onClick={() => p.onItem(i)}
+                >
+                  <strong>
+                    {meta(i, "status") && <em>{meta(i, "status")}</em>}
+                    {i.title}
+                  </strong>
+                  <p>{i.body.split("\n")[0]}</p>
+                  <div>
+                    <span>
+                      {who(i)} · {i.time.slice(5, 16)}
+                    </span>
+                    <span>
+                      {meta(i, "views", "—")} 浏览 · {i.comments.length} 回复
+                    </span>
+                  </div>
+                </button>
+              ))}
+          </>
+        )}
       </div>
       <Tabs
         tabs={["帖子", "版块"]}

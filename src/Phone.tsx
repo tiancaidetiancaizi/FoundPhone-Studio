@@ -51,6 +51,7 @@ import {
   MoreHorizontal,
   ArrowUp,
   Folder,
+  Paperclip,
   Phone as PhoneIcon,
 } from "lucide-react";
 import { getApp, type AppPlugin } from "./registry";
@@ -948,13 +949,24 @@ function AppContent({
       ) : (
         <>
           <small className="detail-meta">
-            {detail.time} · {detail.sender}
+            {detail.time} ·{" "}
+            {detail.meta?.anonymous === "true" ? "匿名用户" : detail.sender}
           </small>
           <h2>{detail.title}</h2>
-          {(detail.media || ["media", "social"].includes(app.engine)) && (
-            <Media item={detail} />
-          )}
+          {(detail.media ||
+            (["media", "social"].includes(app.engine) &&
+              app.id !== "forum")) && <Media item={detail} />}
           <RichText value={detail.richText} fallback={detail.body} />
+          {detail.meta?.tags && (
+            <p className="detail-tags">
+              {detail.meta.tags
+                .split(/\s+/)
+                .filter(Boolean)
+                .map((t) => (
+                  <span key={t}>{t.startsWith("#") ? t : `#${t}`}</span>
+                ))}
+            </p>
+          )}
           <dl className="item-metadata">
             {getFields(app.id)
               .filter((f) => detail.meta?.[f.key])
@@ -970,6 +982,15 @@ function AppContent({
               <Folder size={12} />
               {detail.folder}
             </span>
+          )}
+          {detail.meta?.attachment && (
+            <div className="detail-attachment">
+              <Paperclip size={15} />
+              <div>
+                <strong>{detail.meta.attachment}</strong>
+                <small>{detail.meta.size || "附件"}</small>
+              </div>
+            </div>
           )}
           {detail.comments.map((c, i) => (
             <p key={i} className="comment">
