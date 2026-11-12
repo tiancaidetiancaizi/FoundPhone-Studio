@@ -18,6 +18,7 @@ export const itemSchema = z.object({
       "file",
       "transfer",
       "call",
+      "system",
       "order",
       "note",
       "post",

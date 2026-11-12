@@ -125,6 +125,8 @@ function MessageList({
               <Phone size={11} />
               {i.body}
             </div>
+          ) : i.kind === "system" ? (
+            <div className="skin-system-msg">{i.body}</div>
           ) : (
             <div className={`skin-message ${i.outgoing ? "outgoing" : ""}`}>
               {!whatsapp && !i.outgoing && (

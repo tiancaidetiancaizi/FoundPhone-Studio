@@ -113,6 +113,7 @@ export function ItemEditor({
                 "file",
                 "transfer",
                 "call",
+                "system",
                 "order",
                 "note",
                 "post",
