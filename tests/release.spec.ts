@@ -9,7 +9,7 @@ test("published default story, four dock apps and updated status bar", async ({
   expect(work.title).toBe("妈妈");
   expect(
     work.apps.filter((a: { installed: boolean }) => a.installed),
-  ).toHaveLength(49);
+  ).toHaveLength(12);
   expect(work.nodes).toHaveLength(0);
   const leftThread = (work.data.wechat ?? []).filter(
     (i: { title: string }) => i.title === "left",
@@ -46,33 +46,14 @@ test("published default story, four dock apps and updated status bar", async ({
   await page
     .locator(".status-bar")
     .screenshot({ path: "outputs/release/status-bar.png" });
-  await page
-    .getByRole("button", { name: "打开App Store", exact: true })
-    .click();
-  await page.getByPlaceholder("搜索全部App").fill("X");
-  const x = page
-    .locator(".runtime-library-row")
-    .filter({
-      has: page.locator(".library-app-title strong", { hasText: /^X$/ }),
-    });
-  await expect(x.locator("[data-original-icon=twitter] img")).toHaveAttribute(
-    "src",
-    /twitter\.svg$/,
-  );
-  await x.getByRole("button", { name: "打开", exact: true }).click();
-  await expect(page.locator(".app-screen:not([inert])")).toHaveCSS(
-    "transform",
-    "none",
-  );
-  await page.getByRole("button", { name: "返回桌面", exact: true }).click();
-  await page
-    .getByRole("button", { name: "打开App Store", exact: true })
-    .click();
-  await page.getByPlaceholder("搜索全部App").fill("设置");
-  await page
-    .locator(".runtime-library-row")
-    .getByRole("button", { name: "打开", exact: true })
-    .click();
+  // 精简版只保留 12 个 App，桌面不应再有 App Store / 其它内置应用
+  await expect(
+    page.getByRole("button", { name: "打开App Store", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "打开抖音", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "打开设置", exact: true }).click();
   await expect(page.getByRole("switch", { name: "飞行模式" })).toBeVisible();
   await expect(page.locator(".app-screen:not([inert])")).toHaveCSS(
     "transform",

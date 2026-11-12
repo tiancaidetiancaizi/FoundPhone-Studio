@@ -14,6 +14,7 @@ export const layoutSchema = z
     version: z.literal(1),
     workId: z.string(),
     previewLayoutRevision: z.number().int().min(0).default(0),
+    appsFingerprint: z.string().max(2000).default(""),
     apps: workSchema.shape.apps,
     widgets: z.array(widgetSchema).max(24),
     order: z.array(z.string().max(150)).max(500),
@@ -58,18 +59,21 @@ export function defaultLayout(input: Work): DeviceLayout {
     version: 1,
     workId: w.id,
     previewLayoutRevision: w.id === "ui-test-phone-v2" ? 1 : 0,
-    apps: structuredClone(w.apps)
-      .sort((a, b) => (a.id === "appstore" ? -1 : b.id === "appstore" ? 1 : 0))
-      .map((a) =>
-        a.id === "appstore"
-          ? { ...a, installed: true, visible: true, folder: "", dock: false }
-          : a,
-      ),
+    appsFingerprint: appFingerprint(w),
+    apps: structuredClone(w.apps),
     widgets: [],
     order: [],
     cleared: [],
     positions: {},
   };
+}
+/** 作品装了的 App 集合指纹：作者增删 App 后，本地旧布局整体失效 */
+export function appFingerprint(work: Work) {
+  return work.apps
+    .filter((a) => a.installed)
+    .map((a) => a.id)
+    .sort()
+    .join(",");
 }
 export function validateLayout(raw: unknown, input: Work) {
   const w = ensureAppStore(input);
@@ -90,8 +94,10 @@ export function validateLayout(raw: unknown, input: Work) {
   );
   const store = layout.apps.find((a) => a.id === "appstore");
   if (store) {
-    store.installed = true;
-    store.visible = true;
+    const storeAllowed = w.apps.some((a) => a.id === "appstore" && a.installed);
+    store.installed = storeAllowed;
+    store.visible = storeAllowed;
+    if (!storeAllowed) store.dock = false;
     store.folder = "";
   }
   if (w.id === "ui-test-phone-v2" && layout.previewLayoutRevision < 1) {
@@ -134,11 +140,15 @@ export function validateLayout(raw: unknown, input: Work) {
 export function useDeviceLayout(authored: Work, creator = false) {
   const base = useMemo(() => ensureAppStore(authored), [authored]);
   const key = "foundphone-layout-v1:" + base.id;
+  const fingerprint = useMemo(() => appFingerprint(base), [base]);
   const [stored, setStored] = useState(() => {
       try {
         const text = localStorage.getItem(key);
-        return text
-          ? validateLayout(JSON.parse(text), base)
+        if (!text) return defaultLayout(base);
+        const parsed = validateLayout(JSON.parse(text), base);
+        // 作者改过 App 集合（如精简到 12 个）时，旧布局整体作废，回到作品设定的桌面
+        return parsed.appsFingerprint === fingerprint
+          ? parsed
           : defaultLayout(base);
       } catch {
         return defaultLayout(base);
@@ -185,7 +195,11 @@ export function useDeviceLayout(authored: Work, creator = false) {
     layout,
     error,
     change,
-    importLayout: (raw: unknown) => setStored(validateLayout(raw, base)),
+    importLayout: (raw: unknown) => {
+      const next = validateLayout(raw, base);
+      next.appsFingerprint = fingerprint;
+      setStored(next);
+    },
   };
 }
 export type HomeEntry = {
