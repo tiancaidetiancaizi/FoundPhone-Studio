@@ -11,6 +11,7 @@
     "test": "vitest run",
     "lint": "eslint src",
     "preview": "vite preview --host 127.0.0.1",
+    "publish:sync": "node scripts/sync-publish.mjs",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",
     "licenses": "node scripts/licenses.mjs",
     "story:validate": "node scripts/story.mjs validate",
