@@ -30,6 +30,8 @@ import {
   Image as ImageIcon,
   Layers,
   ShoppingBag,
+  FileText,
+  MapPin,
 } from "lucide-react";
 import { safeMedia, type Item, type UiValue } from "./schema";
 export type SkinProps = {
@@ -80,6 +82,25 @@ function ItemMedia({ item }: { item: Item }) {
   ) : (
     <div className="skin-photo">
       <span>{item.title}</span>
+    </div>
+  );
+}
+function MessageCard({ item }: { item: Item }) {
+  return item.kind === "file" ? (
+    <div className="skin-file-card">
+      <FileText size={26} />
+      <div>
+        <strong>{item.meta?.name || "文件"}</strong>
+        <small>{item.meta?.size || "文件"}</small>
+      </div>
+    </div>
+  ) : (
+    <div className="skin-location-card">
+      <MapPin size={26} />
+      <div>
+        <strong>{item.meta?.place || "位置"}</strong>
+        <small>{item.body || "位置信息"}</small>
+      </div>
     </div>
   );
 }
@@ -138,6 +159,8 @@ function MessageList({
               >
                 {["image", "audio", "video"].includes(i.kind) ? (
                   <ItemMedia item={i} />
+                ) : i.kind === "file" || i.kind === "location" ? (
+                  <MessageCard item={i} />
                 ) : i.kind === "transfer" ? (
                   <div className="skin-transfer">
                     ¥ {i.body}
@@ -389,7 +412,13 @@ export function WeChatSkin(p: SkinProps) {
                       </span>
                       <div>
                         <strong>{t}</strong>
-                        <p>{last.body}</p>
+                        <p>
+                          {last.kind === "file"
+                            ? "[文件]"
+                            : last.kind === "location"
+                              ? "[位置]"
+                              : last.body}
+                        </p>
                       </div>
                       <time>{last.time.slice(-5)}</time>
                     </button>

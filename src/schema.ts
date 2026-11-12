@@ -20,6 +20,7 @@ export const itemSchema = z.object({
       "call",
       "system",
       "order",
+      "location",
       "note",
       "post",
       "event",

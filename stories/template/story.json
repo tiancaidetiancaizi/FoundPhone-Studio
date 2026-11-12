@@ -812,10 +812,15 @@
         },
         {
           "id": "left-46",
-          "body": "（发送了一个地址）",
+          "body": "发送了一个地址",
           "senderId": "left",
           "time": "2040-08-05 20:02",
-          "read": true
+          "read": true,
+          "kind": "location",
+          "title": "left",
+          "meta": {
+            "place": "位置"
+          }
         },
         {
           "id": "zx-51",
@@ -1250,10 +1255,16 @@
         },
         {
           "id": "zjh-02",
-          "body": "（发送了一个命名为1的文件）",
+          "body": "",
           "senderId": "zhangjunhao",
           "time": "2040-11-17 19:02",
-          "read": true
+          "read": true,
+          "kind": "file",
+          "title": "张峻豪",
+          "meta": {
+            "name": "1",
+            "size": "文件"
+          }
         },
         {
           "id": "zjh-03",
@@ -1684,10 +1695,15 @@
         },
         {
           "id": "zx-85",
-          "body": "（发送了一个地址）",
+          "body": "发送了一个地址",
           "senderId": "owner",
           "time": "2040-11-17 21:02",
-          "read": true
+          "read": true,
+          "kind": "location",
+          "title": "张峻豪",
+          "meta": {
+            "place": "位置"
+          }
         },
         {
           "id": "zx-86",

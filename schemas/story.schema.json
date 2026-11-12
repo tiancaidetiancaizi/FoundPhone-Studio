@@ -242,6 +242,7 @@
                     "call",
                     "system",
                     "order",
+                    "location",
                     "note",
                     "post",
                     "event"
@@ -376,6 +377,7 @@
                 "call",
                 "system",
                 "order",
+                "location",
                 "note",
                 "post",
                 "event"

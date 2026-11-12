@@ -4031,6 +4031,40 @@ label {
   font-size: 9px;
   margin: 0 0 18px;
 }
+.skin-file-card,
+.skin-location-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.skin-file-card svg,
+.skin-location-card svg {
+  flex-shrink: 0;
+  color: #4d90fe;
+}
+.skin-file-card svg {
+  color: #5b8fd9;
+}
+.skin-file-card strong,
+.skin-location-card strong {
+  display: block;
+  font-size: 12px;
+  color: #111;
+  text-align: left;
+}
+.skin-file-card small,
+.skin-location-card small {
+  display: block;
+  font-size: 9px;
+  color: #999;
+  text-align: left;
+  margin-top: 2px;
+}
 .skin-message {
   display: flex;
   align-items: flex-start;

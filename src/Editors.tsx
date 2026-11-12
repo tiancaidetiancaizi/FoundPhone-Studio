@@ -115,6 +115,7 @@ export function ItemEditor({
                 "call",
                 "system",
                 "order",
+                "location",
                 "note",
                 "post",
                 "event",
