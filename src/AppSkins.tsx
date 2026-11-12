@@ -238,12 +238,6 @@ export function WeChatSkin(p: SkinProps) {
     });
     return rows;
   })();
-  const latestDay = threads.length
-    ? threads
-        .map((r) => r.last.time.slice(0, 10))
-        .sort()
-        .at(-1)!
-    : "";
   const conversations = threads.map((r) => r.title);
   const contacts = [
     ...new Set(p.items.map((i) => i.sender).filter((s) => s !== "我")),
@@ -441,15 +435,7 @@ export function WeChatSkin(p: SkinProps) {
                               : last.body}
                         </p>
                       </div>
-                      <time>
-                        {last.time.slice(0, 10) === latestDay
-                          ? last.time.slice(-5)
-                          : `${last.time.slice(0, 4)}年${Number(
-                              last.time.slice(5, 7),
-                            )}月${Number(last.time.slice(8, 10))}日 ${
-                              last.time.slice(-5)
-                            }`}
-                      </time>
+                      <time>{last.time.slice(-5)}</time>
                     </button>
                   );
                 })}
