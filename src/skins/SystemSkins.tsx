@@ -428,9 +428,13 @@ export function NotesSkin(p: Props) {
   );
 }
 export function CalendarSkin(p: Props) {
-  const [month, setMonth] = useState(8),
-    [year, setYear] = useState(2026),
-    [day, setDay] = useState(1);
+  // 跟随手机系统日期（作品里的虚拟日期），没有就用原来的 2026-09-01
+  const today = /^\d{4}-\d{2}-\d{2}$/.test(p.date || "")
+      ? (p.date as string)
+      : "2026-09-01",
+    [month, setMonth] = useState(Number(today.slice(5, 7)) - 1),
+    [year, setYear] = useState(Number(today.slice(0, 4))),
+    [day, setDay] = useState(Number(today.slice(8, 10)));
   const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
   const list = p.items.filter((i) =>
     i.time.startsWith(`${prefix}-${String(day).padStart(2, "0")}`),
