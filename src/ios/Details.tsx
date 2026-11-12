@@ -65,7 +65,7 @@ export function NativeDetail({
           <ChevronLeft size={24} />
           {name}
         </button>
-        <strong>{app === "photos" ? item.time.slice(0, 10) : ""}</strong>
+        <strong />
         <button aria-label="更多操作" onClick={() => setCopied(!copied)}>
           <MoreHorizontal size={23} />
         </button>
@@ -101,7 +101,7 @@ export function NativeDetail({
             >
               <Heart fill={favorite ? "#007aff" : "none"} />
             </button>
-            <span>{copied ? "已复制" : item.title}</span>
+            {copied && <span>已复制</span>}
           </footer>
         </>
       ) : app === "contacts" || app === "phone" ? (

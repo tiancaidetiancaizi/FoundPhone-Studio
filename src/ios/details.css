@@ -94,6 +94,10 @@
   flex: 1;
   text-align: center;
 }
+.ios18 .native-detail-photos .native-detail-toolbar {
+  justify-content: flex-start;
+  gap: 22px;
+}
 .ios18 .native-photo-stage {
   flex: 1;
   min-height: 0;
