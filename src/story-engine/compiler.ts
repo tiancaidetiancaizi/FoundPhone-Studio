@@ -33,6 +33,7 @@ export const storySchema = z
       .partial()
       .extend({
         owner: z.string(),
+        avatar: z.string().default(""),
         date: z
           .string()
           .regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -202,7 +203,10 @@ export function compileStory(raw: unknown): { story: Story; work: Work } {
             senderId === "owner"
               ? s.phone.owner
               : contacts.get(senderId || "")?.name || m.sender || s.phone.owner,
-          avatar: m.avatar || contacts.get(senderId || "")?.avatar || "",
+          avatar:
+            m.avatar ||
+            contacts.get(senderId || "")?.avatar ||
+            (senderId === "owner" ? s.phone.avatar || "" : ""),
           outgoing: senderId === "owner" || m.outgoing,
           meta: {
             ...m.meta,
