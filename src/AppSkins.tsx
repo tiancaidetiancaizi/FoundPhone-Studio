@@ -34,6 +34,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { safeMedia, type Item, type UiValue } from "./schema";
+import { ownerAvatarFor } from "./ownerAvatar";
 export type SkinProps = {
   ui?: Record<string, UiValue>;
   onUi?: (key: string, value: UiValue) => void;
@@ -59,10 +60,11 @@ function Avatar({
   round?: boolean;
   src?: string;
 }) {
+  const resolved = src || ownerAvatarFor(name);
   return (
     <span className={`skin-avatar ${round ? "round" : ""}`}>
-      {safeMedia(src)?.startsWith("data:image/") ? (
-        <img src={safeMedia(src)} alt="" />
+      {safeMedia(resolved)?.startsWith("data:image/") ? (
+        <img src={safeMedia(resolved)} alt="" />
       ) : (
         name.slice(0, 1)
       )}
@@ -215,13 +217,34 @@ export function WeChatSkin(p: SkinProps) {
     "readThreads",
     [],
   );
-  const conversations = [
-    ...new Set(
-      p.items
-        .filter((i) => !["朋友圈", "我"].includes(i.folder))
-        .map((i) => i.title),
-    ),
-  ];
+  const threads = (() => {
+    const map = new Map<string, Item[]>();
+    for (const i of p.items) {
+      if (["朋友圈", "我"].includes(i.folder)) continue;
+      const arr = map.get(i.title) ?? [];
+      arr.push(i);
+      map.set(i.title, arr);
+    }
+    const rows = [...map.entries()].map(([title, list]) => ({
+      title,
+      list,
+      last: list.at(-1)!,
+      pinBottom: list.some((i) => i.meta?.pinBottom === "true"),
+    }));
+    // 置顶在底部的会话固定排最后，其余按最后一条消息时间倒序
+    rows.sort((a, b) => {
+      if (a.pinBottom !== b.pinBottom) return a.pinBottom ? 1 : -1;
+      return b.last.time.localeCompare(a.last.time);
+    });
+    return rows;
+  })();
+  const latestDay = threads.length
+    ? threads
+        .map((r) => r.last.time.slice(0, 10))
+        .sort()
+        .at(-1)!
+    : "";
+  const conversations = threads.map((r) => r.title);
   const contacts = [
     ...new Set(p.items.map((i) => i.sender).filter((s) => s !== "我")),
   ];
@@ -380,19 +403,15 @@ export function WeChatSkin(p: SkinProps) {
                   />
                 </label>
               )}
-              {conversations
+              {threads
                 .filter(
-                  (t) =>
-                    t.includes(query) ||
-                    p.items.some(
-                      (i) => i.title === t && i.body.includes(query),
-                    ),
+                  ({ title, list }) =>
+                    title.includes(query) ||
+                    list.some((i) => i.body.includes(query)),
                 )
-                .map((t) => {
-                  const list = p.items.filter((i) => i.title === t),
-                    last = list.at(-1)!,
-                    peer =
-                      [...list].reverse().find((i) => !i.outgoing) || last;
+                .map(({ title: t, list, last }) => {
+                  const peer =
+                    [...list].reverse().find((i) => !i.outgoing) || last;
                   return (
                     <button
                       className="wx-chat-row"
@@ -422,7 +441,15 @@ export function WeChatSkin(p: SkinProps) {
                               : last.body}
                         </p>
                       </div>
-                      <time>{last.time.slice(-5)}</time>
+                      <time>
+                        {last.time.slice(0, 10) === latestDay
+                          ? last.time.slice(-5)
+                          : `${last.time.slice(0, 4)}年${Number(
+                              last.time.slice(5, 7),
+                            )}月${Number(last.time.slice(8, 10))}日 ${
+                              last.time.slice(-5)
+                            }`}
+                      </time>
                     </button>
                   );
                 })}

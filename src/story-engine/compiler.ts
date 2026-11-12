@@ -69,6 +69,9 @@ export const storySchema = z
           app: z.string().default("messages"),
           title: z.string(),
           participants: z.array(z.string()),
+          meta: z
+            .record(z.string().max(60), z.string().max(2000))
+            .default({}),
           messages: z.array(
             content.extend({ senderId: z.string().optional() }),
           ),
@@ -209,6 +212,7 @@ export function compileStory(raw: unknown): { story: Story; work: Work } {
             (senderId === "owner" ? s.phone.avatar || "" : ""),
           outgoing: senderId === "owner" || m.outgoing,
           meta: {
+            ...chat.meta,
             ...m.meta,
             conversationId: chat.id,
             participants: chat.participants.join(","),

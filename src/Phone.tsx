@@ -1,4 +1,5 @@
 import { StatusGlyph } from "./ios/StatusGlyph";
+import { setOwnerIdentity } from "./ownerAvatar";
 import { SocialDetail, socialDetailApps } from "./skins/SocialDetails";
 import { NativeCalculator } from "./ios/Calculator";
 import { HomeLauncher } from "./launcher/HomeLauncher";
@@ -148,6 +149,8 @@ function PhoneRuntime({
   const shell = useRef<HTMLDivElement>(null);
   const gesture = useRef({ x: 0, y: 0, time: 0, zone: "" });
   const [launchOrigin, setLaunchOrigin] = useState(screenOrigin);
+
+  setOwnerIdentity(work.phone.owner, work.phone.avatar || "");
 
   const beginUnlock = () => {
     setPinError("");

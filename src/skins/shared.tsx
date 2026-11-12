@@ -9,6 +9,7 @@ import {
 import { useState, type ReactNode } from "react";
 import type { SkinProps } from "../AppSkins";
 import { safeMedia, type Item } from "../schema";
+import { ownerAvatarFor } from "../ownerAvatar";
 export type Props = SkinProps;
 export const meta = (
   i: Pick<Item, "meta"> | undefined,
@@ -93,10 +94,11 @@ export function Avatar({
   round?: boolean;
   src?: string;
 }) {
+  const resolved = src || ownerAvatarFor(name);
   return (
     <span className={`catalog-avatar ${round ? "round" : ""}`}>
-      {safeMedia(src)?.startsWith("data:image/") ? (
-        <img src={safeMedia(src)} alt="" />
+      {safeMedia(resolved)?.startsWith("data:image/") ? (
+        <img src={safeMedia(resolved)} alt="" />
       ) : (
         name.slice(0, 1) || "人"
       )}

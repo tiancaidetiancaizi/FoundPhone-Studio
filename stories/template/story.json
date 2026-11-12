@@ -1222,7 +1222,10 @@
           "kind": "text",
           "read": true
         }
-      ]
+      ],
+      "meta": {
+        "pinBottom": "true"
+      }
     },
     {
       "id": "chat-zhangjunhao-20201117",

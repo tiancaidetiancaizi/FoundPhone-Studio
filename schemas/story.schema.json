@@ -189,6 +189,18 @@
               "type": "string"
             }
           },
+          "meta": {
+            "default": {},
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
           "messages": {
             "type": "array",
             "items": {

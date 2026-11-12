@@ -3924,6 +3924,10 @@ label {
   margin-top: 2px;
   color: #aaa;
   font-size: 9px;
+  max-width: 96px;
+  text-align: right;
+  line-height: 1.5;
+  flex-shrink: 0;
 }
 .wx-section-label {
   padding: 12px 15px 8px;

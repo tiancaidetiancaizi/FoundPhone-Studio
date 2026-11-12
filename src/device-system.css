@@ -884,6 +884,14 @@
   place-items: center;
   font-size: 29px;
   color: white;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ios18 .settings-account > span img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .ios18 .settings-account > div {
   flex: 1;
