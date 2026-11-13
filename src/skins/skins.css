@@ -1142,6 +1142,14 @@
 .map-places .catalog-row > svg {
   color: #5696ba;
 }
+.map-places .catalog-row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.map-history {
+  margin: 0 15px 10px;
+}
 .native-weather {
   background: linear-gradient(#637c92, #a2b6bd);
   color: #fff;

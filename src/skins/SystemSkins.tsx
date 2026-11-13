@@ -558,7 +558,11 @@ export function MailSkin(p: Props) {
 }
 export function ClockSkin(p: Props) {
   const { tab, setTab, items } = useContent(p, "闹钟");
-  const [enabled, setEnabled] = useSkinState<string[]>(p, "alarms", []),
+  const [enabled, setEnabled] = useSkinState<string[]>(
+    p,
+    "alarms",
+    items.filter((i) => i.meta?.enabled === "true").map((i) => i.id),
+  ),
     [seconds, setSeconds] = useState(0),
     [running, setRunning] = useState(false);
   useEffect(() => {
@@ -597,7 +601,11 @@ export function ClockSkin(p: Props) {
               <button onClick={() => p.onItem(i)}>
                 <time>{meta(i, "clock", i.time.slice(-5))}</time>
                 <small>
-                  {tab === "世界时钟" ? meta(i, "city", i.title) : i.title}
+                  {tab === "世界时钟"
+                    ? meta(i, "city", i.title)
+                    : [i.title, meta(i, "repeat")]
+                        .filter(Boolean)
+                        .join(" · ")}
                 </small>
               </button>
               {tab === "闹钟" ? (
@@ -874,15 +882,47 @@ function LocationMap({
 }
 export function MapsSkin(p: Props) {
   const { q, setQ, items } = useContent(p, "地点");
+  const history = items.filter((i) => meta(i, "history") === "true"),
+    places = items.filter((i) => meta(i, "history") !== "true");
   return (
     <div className="catalog-skin native-maps">
       <Header p={p} />
-      <LocationMap items={items} onItem={p.onItem} />
+      <LocationMap items={places} onItem={p.onItem} />
       <div className="map-sheet">
         <SearchBox value={q} set={setQ} placeholder="搜索虚构地点" />
+        {history.length > 0 && (
+          <div className="rb-history map-history">
+            <div className="rb-history-head">
+              <strong>搜索历史</strong>
+            </div>
+            <div className="rb-history-list">
+              {history.map((i) => (
+                <button
+                  key={i.id}
+                  className="rb-history-chip"
+                  onClick={() => setQ(i.title)}
+                >
+                  <Search size={11} />
+                  {i.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="map-places">
-          {items.map((i) => (
-            <Row key={i.id} item={i} onItem={p.onItem} leading={<MapPin />} />
+          {places.map((i) => (
+            <button
+              className="catalog-row"
+              key={i.id}
+              onClick={() => p.onItem(i)}
+            >
+              <MapPin size={22} />
+              <span>
+                <strong>{i.title}</strong>
+                <small>{i.time.slice(0, 10)}</small>
+              </span>
+              <ChevronRight size={15} />
+            </button>
           ))}
         </div>
       </div>
