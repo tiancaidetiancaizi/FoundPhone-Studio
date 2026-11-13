@@ -34,6 +34,7 @@ export const storySchema = z
       .extend({
         owner: z.string(),
         avatar: z.string().default(""),
+        momentsCover: z.string().default(""),
         date: z
           .string()
           .regex(/^\d{4}-\d{2}-\d{2}$/)

@@ -4166,6 +4166,42 @@ label {
   gap: 13px;
   color: #fff;
 }
+.wx-moment-cover.has-photo {
+  height: 196px;
+  align-items: flex-end;
+  justify-content: flex-end;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+.wx-moment-cover.has-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0) 45%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+}
+.wx-moment-owner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 0 13px 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.wx-moment-owner .skin-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+}
 .wx-moment-cover span {
   font-size: 16px;
 }

@@ -42,6 +42,7 @@ export type SkinProps = {
   owner?: string;
   virtualTime?: string;
   date?: string;
+  momentsCover?: string;
   name: string;
   items: Item[];
   creator: boolean;
@@ -246,6 +247,8 @@ export function WeChatSkin(p: SkinProps) {
   const posts = p.items.filter(
     (i) => i.folder === "朋友圈" || i.kind === "post",
   );
+  const cover = safeMedia(p.momentsCover || "") || "";
+  const coverSrc = cover.startsWith("data:image/") ? cover : "";
   return (
     <div
       className="wechat-ui independent-skin"
@@ -357,9 +360,21 @@ export function WeChatSkin(p: SkinProps) {
         </>
       ) : moments ? (
         <div className="wx-moments">
-          <div className="wx-moment-cover">
-            <Camera size={32} />
-            <span>朋友圈</span>
+          <div
+            className={`wx-moment-cover${coverSrc ? " has-photo" : ""}`}
+            style={coverSrc ? { backgroundImage: `url(${coverSrc})` } : undefined}
+          >
+            {coverSrc ? (
+              <b className="wx-moment-owner">
+                <span>{p.owner}</span>
+                <Avatar name={p.owner || ""} />
+              </b>
+            ) : (
+              <>
+                <Camera size={32} />
+                <span>朋友圈</span>
+              </>
+            )}
           </div>
           {posts.map((i) => (
             <button

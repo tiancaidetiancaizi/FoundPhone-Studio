@@ -1014,6 +1014,7 @@ function AppContent({
               owner={work.phone.owner}
               virtualTime={state.time}
               date={state.date || work.phone.date}
+              momentsCover={work.phone.momentsCover}
               ui={state.ui?.[app.id]}
               onUi={creator ? undefined : onUi}
               name={name}
