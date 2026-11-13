@@ -11,8 +11,9 @@ export default defineConfig(({ command }) => ({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "捡手机",
-        short_name: "捡手机",
+        // 本 fork 只发布《No Principles》，安装到桌面时也用这个名字
+        name: "No Principles",
+        short_name: "No Principles",
         display: "standalone",
         background_color: "#000000",
         theme_color: "#000000",

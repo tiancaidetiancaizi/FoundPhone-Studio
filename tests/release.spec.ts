@@ -6,7 +6,9 @@ test("published default story, home widgets and two dock apps", async ({
 }) => {
   const work = await (await request.get("/work.json")).json();
   expect(work.id).toBe("foundphone-left");
-  expect(work.title).toBe("妈妈");
+  expect(work.title).toBe("No Principles");
+  // 标题不带「· 捡手机」后缀
+  expect(work.phone.studioSuffix).toBe(false);
   expect(
     work.apps.filter((a: { installed: boolean }) => a.installed),
   ).toHaveLength(13);

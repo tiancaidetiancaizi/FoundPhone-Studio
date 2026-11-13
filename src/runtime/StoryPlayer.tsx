@@ -23,8 +23,11 @@ function StoryPlayer() {
       })
       .then((x) => {
         const w = validateWork(x);
+        // 作品可以选择不要「· 捡手机」后缀，标题就是它自己的名字
         document.title =
-          w.title === "捡手机" ? "捡手机" : w.title + " · 捡手机";
+          w.phone.studioSuffix === false || w.title === "捡手机"
+            ? w.title
+            : w.title + " · 捡手机";
         setWork(w);
       })
       .catch((e) => {
