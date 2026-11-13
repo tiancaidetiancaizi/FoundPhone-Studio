@@ -3,7 +3,7 @@
   "id": "foundphone-left",
   "title": "妈妈",
   "description": "2039 年 9 月 10 日，zx 与 left 的两段对话。",
-  "revision": 6,
+  "revision": 7,
   "phone": {
     "owner": "zx",
     "date": "2040-11-18",
@@ -30,7 +30,7 @@
       "name": "相册",
       "installed": true,
       "visible": true,
-      "dock": true,
+      "dock": false,
       "folder": "",
       "icon": ""
     },
@@ -48,7 +48,7 @@
       "name": "邮件",
       "installed": true,
       "visible": true,
-      "dock": true,
+      "dock": false,
       "folder": "",
       "icon": ""
     },
@@ -58,8 +58,25 @@
     "settings",
     "maps",
     "clock",
-    "calendar",
-    "files"
+    {
+      "id": "calendar",
+      "name": "日历",
+      "installed": true,
+      "visible": false,
+      "dock": false,
+      "folder": "",
+      "icon": ""
+    },
+    "files",
+    {
+      "id": "weather",
+      "name": "天气",
+      "installed": true,
+      "visible": false,
+      "dock": false,
+      "folder": "",
+      "icon": ""
+    }
   ],
   "contacts": [
     {
@@ -2256,6 +2273,25 @@
         },
         "id": "map-hotel",
         "time": "2040-11-13 09:05"
+      }
+    ],
+    "weather": [
+      {
+        "id": "weather-hangzhou",
+        "title": "杭市",
+        "body": "夜间多云，后半夜云量减少，天气逐渐转晴。",
+        "meta": {
+          "locationLabel": "我的位置",
+          "temperature": "6",
+          "high": "9",
+          "low": "1",
+          "condition": "乌云转晴",
+          "aqi": "42",
+          "aqiLabel": "优",
+          "sunrise": "06:41",
+          "hourly": "[{\"time\":\"现在\",\"temperature\":\"6\"},{\"time\":\"0时\",\"temperature\":\"5\"},{\"time\":\"1时\",\"temperature\":\"4\"},{\"time\":\"2时\",\"temperature\":\"4\"},{\"time\":\"3时\",\"temperature\":\"3\"}]",
+          "daily": "[{\"label\":\"今天\",\"low\":\"1\",\"high\":\"9\"},{\"label\":\"周一\",\"low\":\"2\",\"high\":\"10\"},{\"label\":\"周二\",\"low\":\"0\",\"high\":\"7\"},{\"label\":\"周三\",\"low\":\"-1\",\"high\":\"6\"},{\"label\":\"周四\",\"low\":\"0\",\"high\":\"8\"},{\"label\":\"周五\",\"low\":\"1\",\"high\":\"9\"}]"
+        }
       }
     ]
   },

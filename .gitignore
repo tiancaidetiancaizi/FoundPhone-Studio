@@ -3,6 +3,8 @@ dist/
 dist-player/
 work/
 outputs/
+.tmp/
+preview-shots/
 *.tsbuildinfo
 playwright-report/
 test-results/

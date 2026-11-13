@@ -158,6 +158,46 @@
   justify-content: center;
   gap: 16px;
 }
+.ios18 .widget-calendar.widget-size-medium {
+  justify-content: center;
+  gap: 8px;
+}
+.ios18 .widget-calendar.widget-size-medium .widget-day {
+  font-size: 64px;
+}
+.ios18 .widget-calendar.widget-size-medium small {
+  font-size: 15px;
+}
+.ios18 .widget-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+.ios18 .widget-calendar-month {
+  font-size: 12px;
+  color: #8a8a8e;
+}
+.ios18 .widget-weather.widget-size-small b {
+  font-size: 36px;
+}
+.ios18 .widget-weather-head,
+.ios18 .widget-weather-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+.ios18 .widget-weather-foot small {
+  opacity: 0.86;
+  letter-spacing: 0.2px;
+}
+.ios18 .widget-weather-head svg {
+  flex: none;
+  opacity: 0.92;
+}
 .ios18 .interactive-home [data-drop-zone="dock"] {
   position: absolute;
   bottom: 14px;

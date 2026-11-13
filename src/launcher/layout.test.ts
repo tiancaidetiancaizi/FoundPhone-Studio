@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import blank from "../../stories/blank/story.json";
+import template from "../../stories/template/story.json";
 import { compileStory } from "../story-engine/compiler";
 import {
   defaultLayout,
@@ -95,8 +96,7 @@ it("adds store to legacy work without changing author data or other app states",
   ).toBe(true);
 });
 
-it("migrates preview folders once while preserving custom folders and widgets", async () => {
-  const preview = await import("../../stories/test-preview/story.json");
+it("migrates preview folders once while preserving custom folders and widgets", async () => {  const preview = await import("../../stories/test-preview/story.json");
   const w = compileStory(preview.default).work;
   const before = JSON.stringify(w);
   const old = defaultLayout(w);
@@ -116,4 +116,31 @@ it("migrates preview folders once while preserving custom folders and widgets", 
   expect(
     validateLayout(migrated, w).apps.find((a) => a.id === "wechat")!.folder,
   ).toBe("作者新建文件夹");
+});
+
+it("applies the story home preset: widgets on top, apps packed below", () => {
+  const w = compileStory(template).work;
+  const l = defaultLayout(w);
+  expect(l.widgets.map((x) => x.type)).toEqual(["weather", "calendar"]);
+  expect(l.widgets.map((x) => x.size)).toEqual(["small", "medium"]);
+  const pages = packHome(homeEntries(l), l.positions);
+  expect(pages).toHaveLength(1);
+  const cells = new Set<string>();
+  for (const entry of pages[0])
+    for (let y = entry.y; y < entry.y + entry.h; y++)
+      for (let x = entry.x; x < entry.x + entry.w; x++)
+        expect(cells.add(x + "," + y).size).toBe(cells.size);
+  const rows = (key: string) =>
+    pages[0].find((c) => c.entry.key === key)!.y;
+  expect(rows("widget-weather-home")).toBeLessThan(rows("calculator"));
+  expect(rows("widget-calendar-home")).toBeLessThan(rows("calculator"));
+  // Dock 只保留微信和备忘录，日历/天气由小组件代替
+  expect(
+    l.apps.filter((a) => a.installed && a.visible && a.dock).map((a) => a.id),
+  ).toEqual(["wechat", "notes"]);
+  expect(
+    l.apps.filter((a) => a.id === "calendar" || a.id === "weather").map(
+      (a) => a.visible,
+    ),
+  ).toEqual([false, false]);
 });

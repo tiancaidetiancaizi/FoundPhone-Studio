@@ -53,18 +53,74 @@ export function ensureAppStore(work: Work): Work {
         ],
       };
 }
+/** 作品默认桌面预设：小组件靠上、App 下移铺满（key = 作品 id） */
+const storyHomePresets: Record<
+  string,
+  {
+    widgets: { widget: Widget; at: [number, number] }[];
+    slots: [number, number][];
+  }
+> = {
+  // 《妈妈》：天气卡 + 放大的日历卡在上方，其余 App 依次排满下方
+  "foundphone-left": {
+    widgets: [
+      {
+        widget: { id: "widget-weather-home", type: "weather", size: "small" },
+        at: [2, 0],
+      },
+      {
+        widget: {
+          id: "widget-calendar-home",
+          type: "calendar",
+          size: "medium",
+        },
+        at: [0, 2],
+      },
+    ],
+    slots: [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [0, 4],
+      [1, 4],
+      [2, 4],
+      [3, 4],
+      [0, 5],
+      [1, 5],
+      [2, 5],
+      [3, 5],
+    ],
+  },
+};
 export function defaultLayout(input: Work): DeviceLayout {
   const w = ensureAppStore(input);
+  const preset = storyHomePresets[w.id];
+  const widgets = preset ? preset.widgets.map((x) => ({ ...x.widget })) : [];
+  const positions: DeviceLayout["positions"] = {};
+  const order: string[] = widgets.map((x) => x.id);
+  if (preset) {
+    for (const { widget, at } of preset.widgets)
+      positions[widget.id] = { page: 0, x: at[0], y: at[1] };
+    let slot = 0;
+    for (const app of w.apps) {
+      if (!app.installed || !app.visible || app.dock) continue;
+      if (slot >= preset.slots.length) break;
+      const [x, y] = preset.slots[slot++];
+      positions[app.id] = { page: 0, x, y };
+      order.push(app.id);
+    }
+  }
   return {
     version: 1,
     workId: w.id,
     previewLayoutRevision: w.id === "ui-test-phone-v2" ? 1 : 0,
     appsFingerprint: appFingerprint(w),
     apps: structuredClone(w.apps),
-    widgets: [],
-    order: [],
+    widgets,
+    order,
     cleared: [],
-    positions: {},
+    positions,
   };
 }
 /** 作品装了的 App 集合指纹：作者增删 App 后，本地旧布局整体失效 */

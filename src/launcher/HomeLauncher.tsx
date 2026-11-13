@@ -65,15 +65,26 @@ function WidgetFace({
   const date = new Date((work.phone.date || "2026-10-25") + "T12:00:00Z");
   const weather = work.data.weather?.[0];
   return (
-    <div className={"widget-face widget-" + widget.type}>
+    <div
+      className={
+        "widget-face widget-" +
+        widget.type +
+        (widget.size === "small" ? "" : " widget-size-" + widget.size)
+      }
+    >
       {widget.type === "calendar" ? (
         <>
-          <span className="widget-red">
-            {new Intl.DateTimeFormat("zh-CN", {
-              weekday: "long",
-              timeZone: "UTC",
-            }).format(date)}
-          </span>
+          <div className="widget-calendar-head">
+            <span className="widget-red">
+              {new Intl.DateTimeFormat("zh-CN", {
+                weekday: "long",
+                timeZone: "UTC",
+              }).format(date)}
+            </span>
+            <span className="widget-calendar-month">
+              {date.getUTCMonth() + 1}月
+            </span>
+          </div>
           <b className="widget-day">{date.getUTCDate()}</b>
           <small>{work.data.calendar?.[0]?.title || "今天没有日程"}</small>
         </>
@@ -85,10 +96,21 @@ function WidgetFace({
         </>
       ) : widget.type === "weather" ? (
         <>
-          <small>{weather?.title || "未添加城市"}</small>
+          <div className="widget-weather-head">
+            <small>
+              {weather?.title || weather?.meta.locationLabel || "未添加城市"}
+            </small>
+            <CloudSun size={20} />
+          </div>
           <b>{weather?.meta.temperature || "—"}°</b>
-          <CloudSun size={27} />
-          <small>{weather?.meta.condition || "暂无天气数据"}</small>
+          <div className="widget-weather-foot">
+            <small>{weather?.meta.condition || "暂无天气数据"}</small>
+            {weather?.meta.high && (
+              <small>
+                {weather.meta.high}° / {weather.meta.low || "—"}°
+              </small>
+            )}
+          </div>
         </>
       ) : widget.type === "notes" ? (
         <>
