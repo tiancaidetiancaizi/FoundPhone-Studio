@@ -455,7 +455,12 @@ export function WeChatSkin(p: SkinProps) {
         <>
           <MessageList
             key={p.thread}
-            items={p.items.filter((i) => i.title === p.thread)}
+            items={p.items.filter(
+              (i) =>
+                i.title === p.thread &&
+                i.kind !== "post" &&
+                !["朋友圈", "我"].includes(i.folder),
+            )}
             creator={p.creator}
             onItem={p.onItem}
             onRead={p.onRead}

@@ -91,6 +91,10 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
   await page.getByRole("button", { name: "打开微信", exact: true }).click();
   await page.locator(".wx-chat-row").filter({ hasText: "left" }).click();
   await expect(page.locator(".skin-bubble").last()).toContainText("生日快乐");
+  // 会话第一条必须是机主 2039-09-10 发的那句，朋友圈内容不能混进聊天流
+  await expect(page.locator(".skin-bubble").first()).toContainText(
+    "为什么不让我进去呢？",
+  );
   const field = page.locator(".wx-finale-field");
   await expect(field).toBeVisible();
   await field.click();
