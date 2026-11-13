@@ -35,6 +35,8 @@ export const storySchema = z
         owner: z.string(),
         avatar: z.string().default(""),
         momentsCover: z.string().default(""),
+        wechatId: z.string().max(64).default(""),
+        finale: z.boolean().default(false),
         date: z
           .string()
           .regex(/^\d{4}-\d{2}-\d{2}$/)

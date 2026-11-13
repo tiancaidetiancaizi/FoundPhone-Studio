@@ -14,7 +14,8 @@ test("published default story, home widgets and two dock apps", async ({
   const leftThread = (work.data.wechat ?? []).filter(
     (i: { title: string }) => i.title === "left",
   );
-  expect(leftThread).toHaveLength(128);
+  expect(leftThread).toHaveLength(132);
+  expect(work.phone.wechatId).toBe("zx20390910");
   expect(
     (work.data.notes ?? []).some(
       (n: { meta?: Record<string, string> }) => n.meta?.pinned === "true",

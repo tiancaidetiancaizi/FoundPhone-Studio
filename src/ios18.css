@@ -953,3 +953,172 @@
   font-size: 12px;
 }
 
+
+/* —— 微信结尾剧情：锁定会话 / 红点 / 朋友圈点赞 / 脚本输入 —— */
+.ios18 .wx-chat-row.locked {
+  opacity: 0.6;
+}
+.ios18 .wx-chat-row.locked p {
+  color: #b9b9b9;
+}
+.ios18 .wx-chat-lock {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #b9bdc4;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #fff;
+}
+.ios18 .wx-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fa5151;
+  margin: -7px 0 0 auto;
+}
+.ios18 .wx-bottom button {
+  position: relative;
+}
+.ios18 .wx-bottom .wx-dot {
+  position: absolute;
+  top: 4px;
+  right: 9px;
+  margin: 0;
+}
+.ios18 .wx-moment-item {
+  border-bottom: 1px solid #eee;
+}
+.ios18 .wx-moment-post {
+  border-bottom: 0;
+}
+.ios18 .wx-moment-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 13px 12px;
+}
+.ios18 .wx-moment-like {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #7a8699;
+  background: #f4f5f7;
+  border-radius: 14px;
+  padding: 5px 11px;
+}
+.ios18 .wx-moment-like.hint {
+  color: #e0575f;
+  animation: wx-like-hint 1.7s ease-in-out infinite;
+}
+.ios18 .wx-moment-like.liked {
+  color: #ed4956;
+  background: #fdeef0;
+}
+@keyframes wx-like-hint {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 #ed495600;
+    opacity: 0.55;
+  }
+  50% {
+    box-shadow: 0 0 0 5px #ed49561a;
+    opacity: 1;
+  }
+}
+.ios18 .wx-locked-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  background: #000000c4;
+  color: #fff;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  white-space: nowrap;
+  z-index: 20;
+}
+.ios18 .wx-finale-compose {
+  gap: 9px;
+}
+.ios18 .wx-finale-field {
+  flex: 1;
+  min-height: 31px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 9px;
+  font-size: 13px;
+  color: #111;
+  text-align: left;
+}
+.ios18 .wx-caret {
+  width: 1.5px;
+  height: 15px;
+  background: #07c160;
+  animation: wx-caret 1s steps(1) infinite;
+}
+@keyframes wx-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.ios18 .wx-finale-send {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #d8d8d8;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: background 0.2s;
+}
+.ios18 .wx-finale-send.ready {
+  background: #07c160;
+}
+.ios18 .wx-typing-bubble {
+  position: absolute;
+  left: 14px;
+  bottom: 64px;
+  background: #fff;
+  border-radius: 13px;
+  padding: 9px 12px;
+  display: flex;
+  gap: 4px;
+  box-shadow: 0 2px 8px #0001;
+}
+.ios18 .wx-typing-bubble i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #b6b6b6;
+  animation: wx-typing 1.2s infinite;
+}
+.ios18 .wx-typing-bubble i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ios18 .wx-typing-bubble i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes wx-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}

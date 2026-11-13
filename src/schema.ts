@@ -99,6 +99,9 @@ export const workSchema = z.object({
     owner: z.string(),
     avatar: z.string().optional(),
     momentsCover: z.string().optional(),
+    wechatId: z.string().max(64).optional(),
+    /** 该作品带有一套结局演出（时钟锁、脚本化输入等），默认关闭 */
+    finale: z.boolean().optional(),
     date: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)

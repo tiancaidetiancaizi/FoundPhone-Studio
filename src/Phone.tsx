@@ -33,6 +33,7 @@ import "./ios/tokens.css";
 import "./ios/reference.css";
 import "./ios/status-bar.css";
 import { WeChatSkin, WhatsAppSkin } from "./AppSkins";
+import { FINALE, clockLocked } from "./finale";
 import { RichText } from "./RichText";
 import {
   useEffect,
@@ -250,6 +251,10 @@ function PhoneRuntime({
   const event = (event: string, target: string) => {
     if (!creator) update(dispatch(work, runtimeRef.current, event, target));
   };
+  const notice = (text: string) => {
+    setBanner(text);
+    setTimeout(() => setBanner(""), 4600);
+  };
   const captureApp = () => {
     if (!app) return;
     const current = shell.current?.querySelector<HTMLElement>(".app-screen");
@@ -271,13 +276,37 @@ function PhoneRuntime({
   };
   const open = (id: string) => {
     if (!work.apps.some((a) => a.id === id && a.installed)) return;
+    const current = runtimeRef.current;
+    const finale = !!work.phone.finale;
+    if (!creator && id === "clock" && clockLocked(current, finale)) {
+      notice("时钟：现在还打不开");
+      return;
+    }
     setApp(id);
     setKeyboard(false);
     setRecent((v) => [id, ...v.filter((a) => a !== id)].slice(0, 8));
     setFolder("");
     setPanel("");
     onOpen?.(id);
-    event("openApp", id);
+    if (creator) return;
+    const next = dispatch(work, current, "openApp", id);
+    // 打开过微信以外的任意 App 之后，张峻豪那条对话才解锁
+    if (
+      finale &&
+      id !== "clock" &&
+      id !== "wechat" &&
+      !next.ui?.wechat?.[FINALE.chatLock]
+    ) {
+      next.ui = {
+        ...next.ui,
+        wechat: { ...next.ui?.wechat, [FINALE.chatLock]: true },
+      };
+      next.notifications = [
+        ...next.notifications,
+        "微信：张峻豪的对话可以打开了",
+      ];
+    }
+    update(next);
   };
   const installedApps = work.apps.filter((a) => a.installed);
   const apps = installedApps.filter((a) => a.visible);
@@ -313,6 +342,31 @@ function PhoneRuntime({
         (_, i) => i !== index,
       ),
     });
+  // 给 left 的朋友圈点过赞之后，时钟解锁并提示一次
+  const likedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    const liked = !!s.ui?.wechat?.[FINALE.momentLiked];
+    if (likedRef.current === null) likedRef.current = liked;
+    else if (liked && !likedRef.current) notice("时钟：现在可以打开了");
+    likedRef.current = liked;
+  }, [ready, s.ui?.wechat]);
+  // 世界时钟跳到 11.19 00:00 之后，left 发来「生日快乐」
+  const midnightRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    const on = !!s.ui?.clock?.[FINALE.midnight];
+    if (midnightRef.current === null) midnightRef.current = on;
+    else if (on && !midnightRef.current)
+      update({
+        ...runtimeRef.current,
+        notifications: [
+          ...runtimeRef.current.notifications,
+          "微信：left：生日快乐",
+        ],
+      });
+    midnightRef.current = on;
+  }, [ready, s.ui?.clock]);
   if (!ready) return <div className="phone-loading">正在恢复进度…</div>;
   return (
     <div
@@ -478,6 +532,9 @@ function PhoneRuntime({
                       ),
                     );
                   }}
+                  onRuntime={(patch) =>
+                    update({ ...runtimeRef.current, ...patch })
+                  }
                   work={work}
                 />
               </AppWindow>
@@ -870,6 +927,7 @@ function AppContent({
   onBack,
   onSettings,
   onUi,
+  onRuntime,
   work,
 }: {
   app: AppPlugin;
@@ -883,6 +941,7 @@ function AppContent({
   onBack: () => void;
   onSettings?: () => void;
   onUi?: (key: string, value: UiValue) => void;
+  onRuntime?: (patch: Partial<Runtime>) => void;
   work: Work;
 }) {
   const [detail, setDetail] = useState<Item | null>(null);
@@ -1015,8 +1074,12 @@ function AppContent({
               virtualTime={state.time}
               date={state.date || work.phone.date}
               momentsCover={work.phone.momentsCover}
+              wechatId={work.phone.wechatId}
+              finale={!!work.phone.finale}
               ui={state.ui?.[app.id]}
+              deviceUi={state.ui}
               onUi={creator ? undefined : onUi}
+              onRuntime={creator ? undefined : onRuntime}
               name={name}
               items={shown}
               creator={creator}

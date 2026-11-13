@@ -4234,7 +4234,11 @@ label {
   margin-top: 10px;
 }
 .wx-moment-post img {
-  width: 100%;
+  width: auto;
+  max-width: 74%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 5px;
   margin-top: 8px;
 }
 .skin-empty {

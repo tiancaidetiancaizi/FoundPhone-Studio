@@ -1,6 +1,6 @@
 import { NativeComposer } from "./DeviceSystem";
 import { useSkinState } from "./skinState";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   Plus,
@@ -32,14 +32,20 @@ import {
   ShoppingBag,
   FileText,
   MapPin,
+  Lock,
 } from "lucide-react";
-import { safeMedia, type Item, type UiValue } from "./schema";
+import { safeMedia, type Item, type Runtime, type UiValue } from "./schema";
 import { ownerAvatarFor } from "./ownerAvatar";
+import { FINALE } from "./finale";
 export type SkinProps = {
   ui?: Record<string, UiValue>;
+  deviceUi?: Record<string, Record<string, UiValue>>;
   onUi?: (key: string, value: UiValue) => void;
+  onRuntime?: (patch: Partial<Runtime>) => void;
   appId?: string;
   owner?: string;
+  wechatId?: string;
+  finale?: boolean;
   virtualTime?: string;
   date?: string;
   momentsCover?: string;
@@ -135,8 +141,18 @@ function MessageList({
   onRead: (id: string) => void;
   whatsapp?: boolean;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  // 进入聊天默认停在最后一条消息，想翻旧内容自己往上滑
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [items.length]);
   return (
-    <div className={`skin-messages ${whatsapp ? "wa-wallpaper" : ""}`}>
+    <div
+      className={`skin-messages ${whatsapp ? "wa-wallpaper" : ""}`}
+      ref={box}
+    >
       <div className="skin-date">{items[0]?.time.slice(0, 10)}</div>
       {items.map((i, index) => (
         <Fragment key={i.id}>
@@ -207,13 +223,65 @@ function Compose({
     </div>
   );
 }
+function FinaleComposer({ onSent }: { onSent: () => void }) {
+  const [text, setText] = useState(""),
+    [phase, setPhase] = useState<"idle" | "writing" | "ready">("idle"),
+    timers = useRef<number[]>([]);
+  useEffect(
+    () => () => {
+      timers.current.forEach((t) => clearTimeout(t));
+    },
+    [],
+  );
+  const at = (ms: number, fn: () => void) =>
+    timers.current.push(window.setTimeout(fn, ms));
+  const start = () => {
+    if (phase !== "idle") return;
+    setPhase("writing");
+    at(0, () => setText("我"));
+    // 停顿几秒，删掉，再一个字一个字敲出「对不起」
+    at(2300, () => setText(""));
+    at(2750, () => setText("对"));
+    at(3050, () => setText("对不"));
+    at(3350, () => setText("对不起"));
+    at(3450, () => setPhase("ready"));
+  };
+  return (
+    <div className="skin-compose wx-finale-compose">
+      <Mic size={20} />
+      <button
+        className={"wx-finale-field" + (text ? " has-text" : "")}
+        aria-label="输入消息"
+        onClick={start}
+      >
+        <span>{text}</span>
+        {phase === "writing" && <i className="wx-caret" />}
+      </button>
+      <Smile size={21} />
+      <button
+        className={
+          "wx-finale-send" + (phase === "ready" && text ? " ready" : "")
+        }
+        aria-label="发送消息"
+        disabled={phase !== "ready" || !text}
+        onClick={() => {
+          setText("");
+          onSent();
+        }}
+      >
+        <Send size={17} />
+      </button>
+    </div>
+  );
+}
 export function WeChatSkin(p: SkinProps) {
   const [tab, setTab] = useState("微信"),
     [query, setQuery] = useState(""),
     [moments, setMoments] = useState(false),
     [menu, setMenu] = useState(false),
     [searchOpen, setSearchOpen] = useState(false),
-    [utility, setUtility] = useState("");
+    [utility, setUtility] = useState(""),
+    [lockedHint, setLockedHint] = useState("");
   const [readThreads, setReadThreads] = useSkinState<string[]>(
     p,
     "readThreads",
@@ -227,14 +295,20 @@ export function WeChatSkin(p: SkinProps) {
       arr.push(i);
       map.set(i.title, arr);
     }
-    const rows = [...map.entries()].map(([title, list]) => ({
-      title,
-      list,
-      last: list.at(-1)!,
-      pinBottom: list.some((i) => i.meta?.pinBottom === "true"),
-    }));
-    // 置顶在底部的会话固定排最后，其余按最后一条消息时间倒序
+    const rows = [...map.entries()].map(([title, list]) => {
+      const rank = Number(list[0]?.meta?.pinOrder ?? "");
+      return {
+        title,
+        list,
+        last: list.at(-1)!,
+        pinBottom: list.some((i) => i.meta?.pinBottom === "true"),
+        rank: Number.isFinite(rank) ? rank : Number.POSITIVE_INFINITY,
+        lockedBy: list[0]?.meta?.lockedBy || "",
+      };
+    });
+    // 作者指定的顺序优先；其余按「置底 → 最后一条消息时间」倒序
     rows.sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
       if (a.pinBottom !== b.pinBottom) return a.pinBottom ? 1 : -1;
       return b.last.time.localeCompare(a.last.time);
     });
@@ -249,6 +323,28 @@ export function WeChatSkin(p: SkinProps) {
   );
   const cover = safeMedia(p.momentsCover || "") || "";
   const coverSrc = cover.startsWith("data:image/") ? cover : "";
+  const typing =
+    p.thread === "left" && !!p.ui?.[FINALE.sent] && !p.ui?.[FINALE.replied];
+  const hasNewMoment =
+    posts.some((i) => i.meta?.newMoment === "true") &&
+    !p.ui?.[FINALE.momentsSeen];
+  const seeMoments = () => {
+    setMoments(true);
+    p.onUi?.(FINALE.momentsSeen, true);
+  };
+  // 读完张峻豪的聊天记录（进入会话默认停在最后一条）
+  useEffect(() => {
+    if (p.thread !== "张峻豪" || p.ui?.[FINALE.chatRead] || !p.onUi) return;
+    const timer = setTimeout(() => p.onUi?.(FINALE.chatRead, true), 1500);
+    return () => clearTimeout(timer);
+  }, [p.thread, p.ui]);
+  // 发送「对不起」之后，left 正在输入，随后发来「我爱你」
+  useEffect(() => {
+    if (p.thread !== "left" || !p.ui?.[FINALE.sent] || p.ui?.[FINALE.replied])
+      return;
+    const timer = setTimeout(() => p.onUi?.(FINALE.replied, true), 3200);
+    return () => clearTimeout(timer);
+  }, [p.thread, p.ui]);
   return (
     <div
       className="wechat-ui independent-skin"
@@ -278,8 +374,15 @@ export function WeChatSkin(p: SkinProps) {
         </button>
         <strong>
           {utility ||
-            p.thread ||
-            (moments ? "朋友圈" : tab === "微信" ? p.name : tab)}
+            (p.thread
+              ? typing
+                ? "对方正在输入中"
+                : p.thread
+              : moments
+                ? "朋友圈"
+                : tab === "微信"
+                  ? p.name
+                  : tab)}
         </strong>
         <button
           aria-label={
@@ -351,18 +454,36 @@ export function WeChatSkin(p: SkinProps) {
       ) : p.thread ? (
         <>
           <MessageList
+            key={p.thread}
             items={p.items.filter((i) => i.title === p.thread)}
             creator={p.creator}
             onItem={p.onItem}
             onRead={p.onRead}
           />
-          <Compose creator={p.creator} onAdd={p.onAdd} />
+          {p.finale &&
+          p.thread === "left" &&
+          p.deviceUi?.clock?.[FINALE.midnight] &&
+          !p.ui?.[FINALE.sent] &&
+          !p.creator ? (
+            <FinaleComposer onSent={() => p.onUi?.(FINALE.sent, true)} />
+          ) : (
+            <Compose creator={p.creator} onAdd={p.onAdd} />
+          )}
+          {typing && (
+            <div className="wx-typing-bubble" aria-live="polite">
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
         </>
       ) : moments ? (
         <div className="wx-moments">
           <div
             className={`wx-moment-cover${coverSrc ? " has-photo" : ""}`}
-            style={coverSrc ? { backgroundImage: `url(${coverSrc})` } : undefined}
+            style={
+              coverSrc ? { backgroundImage: `url(${coverSrc})` } : undefined
+            }
           >
             {coverSrc ? (
               <b className="wx-moment-owner">
@@ -376,21 +497,51 @@ export function WeChatSkin(p: SkinProps) {
               </>
             )}
           </div>
-          {posts.map((i) => (
-            <button
-              key={i.id}
-              className="wx-moment-post"
-              onClick={() => p.onItem(i)}
-            >
-              <Avatar name={i.sender} />
-              <div>
-                <strong>{i.sender}</strong>
-                <p>{i.body}</p>
-                {i.media && <ItemMedia item={i} />}
-                <small>{i.time}</small>
+          {posts.map((i) => {
+            const likeKey = String(i.meta?.likeKey || "");
+            const liked = !!likeKey && !!p.ui?.[likeKey];
+            const hint = i.meta?.likeHint === "true" && !liked;
+            return (
+              <div className="wx-moment-item" key={i.id}>
+                <button
+                  className="wx-moment-post"
+                  onClick={() => {
+                    p.onItem(i);
+                    p.onUi?.(FINALE.momentsSeen, true);
+                  }}
+                >
+                  <Avatar name={i.sender} src={i.avatar} />
+                  <div>
+                    <strong>{i.sender}</strong>
+                    <p>{i.body}</p>
+                    {i.media && <ItemMedia item={i} />}
+                    <small>{i.meta?.relative || i.time}</small>
+                  </div>
+                </button>
+                {likeKey && (
+                  <div className="wx-moment-actions">
+                    <button
+                      className={
+                        "wx-moment-like" +
+                        (hint ? " hint" : "") +
+                        (liked ? " liked" : "")
+                      }
+                      aria-label={liked ? "已赞这条朋友圈" : "赞这条朋友圈"}
+                      aria-pressed={liked}
+                      onClick={() => p.onUi?.(likeKey, true)}
+                    >
+                      <Heart
+                        size={17}
+                        fill={liked ? "#ed4956" : "none"}
+                        color={liked ? "#ed4956" : "currentColor"}
+                      />
+                      <span>{liked ? "已赞" : "赞"}</span>
+                    </button>
+                  </div>
+                )}
               </div>
-            </button>
-          ))}
+            );
+          })}
           {!posts.length && <p className="skin-empty">暂无朋友圈动态</p>}
           {p.creator && (
             <button className="phone-add" onClick={p.onAdd}>
@@ -419,14 +570,20 @@ export function WeChatSkin(p: SkinProps) {
                     title.includes(query) ||
                     list.some((i) => i.body.includes(query)),
                 )
-                .map(({ title: t, list, last }) => {
+                .map(({ title: t, list, last, lockedBy }) => {
                   const peer =
                     [...list].reverse().find((i) => !i.outgoing) || last;
+                  const locked = !!lockedBy && !p.ui?.[lockedBy];
                   return (
                     <button
-                      className="wx-chat-row"
+                      className={"wx-chat-row" + (locked ? " locked" : "")}
                       key={t}
                       onClick={() => {
+                        if (locked) {
+                          setLockedHint("这条对话现在还打不开");
+                          setTimeout(() => setLockedHint(""), 2200);
+                          return;
+                        }
                         setReadThreads((v) => (v.includes(t) ? v : [...v, t]));
                         p.onThread(t);
                         p.onRead(t);
@@ -435,20 +592,28 @@ export function WeChatSkin(p: SkinProps) {
                       <span className="wx-chat-avatar">
                         <Avatar name={t} src={peer.avatar} />
                         {!readThreads.includes(t) &&
-                          list.some((i) => !i.read) && (
+                          list.some((i) => !i.read) &&
+                          !locked && (
                             <b className="wx-unread">
                               {list.filter((i) => !i.read).length}
                             </b>
                           )}
+                        {locked && (
+                          <b className="wx-chat-lock">
+                            <Lock size={9} />
+                          </b>
+                        )}
                       </span>
                       <div>
                         <strong>{t}</strong>
                         <p>
-                          {last.kind === "file"
-                            ? "[文件]"
-                            : last.kind === "location"
-                              ? "[位置]"
-                              : last.body}
+                          {locked
+                            ? "对话暂时打不开"
+                            : last.kind === "file"
+                              ? "[文件]"
+                              : last.kind === "location"
+                                ? "[位置]"
+                                : last.body}
                         </p>
                       </div>
                       <time>{last.time.slice(-5)}</time>
@@ -494,12 +659,15 @@ export function WeChatSkin(p: SkinProps) {
                     className="wx-discovery"
                     onClick={() =>
                       label === "朋友圈"
-                        ? setMoments(true)
+                        ? seeMoments()
                         : setUtility(String(label))
                     }
                   >
                     <Glyph size={22} style={{ color: String(color) }} />
                     {String(label)}
+                    {label === "朋友圈" && hasNewMoment && (
+                      <b className="wx-dot" aria-hidden="true" />
+                    )}
                     <span>›</span>
                   </button>
                 );
@@ -511,7 +679,7 @@ export function WeChatSkin(p: SkinProps) {
                 <Avatar name={p.owner || "机主"} />
                 <div>
                   <h2>{p.owner || "机主"}</h2>
-                  <small>微信号：未设置</small>
+                  <small>微信号：{p.wechatId || "未设置"}</small>
                   <button
                     className="wx-profile-status"
                     onClick={() => setUtility("状态")}
@@ -537,12 +705,15 @@ export function WeChatSkin(p: SkinProps) {
                       className="wx-discovery"
                       onClick={() =>
                         label === "朋友圈"
-                          ? setMoments(true)
+                          ? seeMoments()
                           : setUtility(String(label))
                       }
                     >
                       <Glyph size={22} style={{ color: String(color) }} />
                       {String(label)}
+                      {label === "朋友圈" && hasNewMoment && (
+                        <b className="wx-dot" aria-hidden="true" />
+                      )}
                       <span>›</span>
                     </button>
                   );
@@ -581,14 +752,19 @@ export function WeChatSkin(p: SkinProps) {
             <button
               className={tab === t.label ? "selected" : ""}
               key={t.label}
+              aria-label={t.label}
               onClick={() => setTab(t.label)}
             >
               <t.icon size={21} />
               <span>{t.label}</span>
+              {t.label === "发现" && hasNewMoment && (
+                <b className="wx-dot" aria-hidden="true" />
+              )}
             </button>
           ))}
         </nav>
       )}
+      {lockedHint && <div className="wx-locked-toast">{lockedHint}</div>}
     </div>
   );
 }
@@ -655,6 +831,7 @@ export function WhatsAppSkin(p: SkinProps) {
             <Phone size={17} />
           </div>
           <MessageList
+            key={p.thread}
             items={p.items.filter((i) => i.title === p.thread)}
             creator={p.creator}
             onItem={p.onItem}
@@ -794,6 +971,7 @@ export function WhatsAppSkin(p: SkinProps) {
             <button
               className={tab === t.label ? "selected" : ""}
               key={t.label}
+              aria-label={t.label}
               onClick={() => setTab(t.label)}
             >
               <t.icon size={20} />

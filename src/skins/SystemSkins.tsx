@@ -436,8 +436,10 @@ export function CalendarSkin(p: Props) {
     [year, setYear] = useState(Number(today.slice(0, 4))),
     [day, setDay] = useState(Number(today.slice(8, 10)));
   const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
-  const list = p.items.filter((i) =>
-    i.time.startsWith(`${prefix}-${String(day).padStart(2, "0")}`),
+  const list = p.items.filter(
+    (i) =>
+      i.time.startsWith(`${prefix}-${String(day).padStart(2, "0")}`) &&
+      i.meta?.mark !== "true",
   );
   const move = (d: number) => {
     const date = new Date(Date.UTC(year, month + d, 1));
@@ -559,12 +561,18 @@ export function MailSkin(p: Props) {
 export function ClockSkin(p: Props) {
   const { tab, setTab, items } = useContent(p, "闹钟");
   const [enabled, setEnabled] = useSkinState<string[]>(
-    p,
-    "alarms",
-    items.filter((i) => i.meta?.enabled === "true").map((i) => i.id),
-  ),
+      p,
+      "alarms",
+      items.filter((i) => i.meta?.enabled === "true").map((i) => i.id),
+    ),
     [seconds, setSeconds] = useState(0),
     [running, setRunning] = useState(false);
+  // 点开世界时钟：手机时间走到 11 月 19 日 00:00
+  const midnight = () => {
+    if (!p.finale || p.creator || p.ui?.midnight === true) return;
+    p.onUi?.("midnight", true);
+    p.onRuntime?.({ time: "00:00", date: "2040-11-19" });
+  };
   useEffect(() => {
     if (!running) return;
     const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -596,16 +604,25 @@ export function ClockSkin(p: Props) {
             </div>
           </div>
         ) : (
-          items.map((i) => (
+          (tab === "世界时钟"
+            ? items.filter((i) => i.meta?.city)
+            : items.filter((i) => i.folder !== "世界时钟")
+          ).map((i) => (
             <div className="alarm-row" key={i.id}>
-              <button onClick={() => p.onItem(i)}>
+              <button
+                onClick={() => {
+                  if (tab === "世界时钟") {
+                    midnight();
+                    return;
+                  }
+                  p.onItem(i);
+                }}
+              >
                 <time>{meta(i, "clock", i.time.slice(-5))}</time>
                 <small>
                   {tab === "世界时钟"
                     ? meta(i, "city", i.title)
-                    : [i.title, meta(i, "repeat")]
-                        .filter(Boolean)
-                        .join(" · ")}
+                    : [i.title, meta(i, "repeat")].filter(Boolean).join(" · ")}
                 </small>
               </button>
               {tab === "闹钟" ? (
@@ -634,7 +651,10 @@ export function ClockSkin(p: Props) {
       <Tabs
         tabs={["世界时钟", "闹钟", "秒表"]}
         value={tab}
-        set={setTab}
+        set={(t) => {
+          setTab(t);
+          if (t === "世界时钟") midnight();
+        }}
         icons={[<Globe />, <Clock />, <Clock />]}
       />
     </div>

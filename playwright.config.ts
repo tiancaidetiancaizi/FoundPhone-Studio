@@ -4,6 +4,7 @@ export default defineConfig({
   testMatch: [
     "runtime.spec.ts",
     "release.spec.ts",
+    "finale.spec.ts",
     "launcher.spec.ts",
     "home-swipe.spec.ts",
     "app-organization.spec.ts",
