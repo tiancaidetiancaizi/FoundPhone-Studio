@@ -396,8 +396,30 @@ function PhoneRuntime({
         nonce: ++enterSeq.current,
       });
   };
+  // 解锁那一刻先让「张峻豪的对话可以打开了」这条说完整，隔 15 秒再提朋友圈
+  const chatLockRef = useRef<boolean | null>(null);
+  const chatUnlockAt = useRef(0);
+  useEffect(() => {
+    if (!ready) return;
+    const on = !!s.ui?.wechat?.[FINALE.chatLock];
+    if (chatLockRef.current === null) {
+      // 读档时已经解锁的老进度不设冷却，免得一进来就等 15 秒
+      if (on) chatUnlockAt.current = 0;
+    } else if (on && !chatLockRef.current) {
+      chatUnlockAt.current = Date.now();
+    }
+    chatLockRef.current = on;
+  }, [ready, s.ui?.wechat]);
   // 解锁之后、朋友圈还没看也没点赞之前，每次退回桌面都再提醒一次
   const lastApp = useRef("");
+  const nudgeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const nudgeDue = () => {
+    const wui = runtimeRef.current.ui?.wechat ?? {};
+    if (wui[FINALE.momentLiked] || wui[FINALE.momentsSeen]) return;
+    notice("微信：朋友圈有新动态");
+  };
   useEffect(() => {
     const prev = lastApp.current;
     lastApp.current = app;
@@ -406,7 +428,15 @@ function PhoneRuntime({
     const wui = s.ui?.wechat ?? {};
     if (!wui[FINALE.chatLock]) return;
     if (wui[FINALE.momentLiked] || wui[FINALE.momentsSeen]) return;
-    notice("微信：朋友圈有新动态");
+    const wait = chatUnlockAt.current
+      ? Math.max(0, 15000 - (Date.now() - chatUnlockAt.current))
+      : 0;
+    if (wait === 0) {
+      nudgeDue();
+      return;
+    }
+    clearTimeout(nudgeTimer.current);
+    nudgeTimer.current = setTimeout(nudgeDue, wait);
   }, [app, ready, creator, s.ui, work.phone.finale]);
   const dismissNotice = (index: number) =>
     update({

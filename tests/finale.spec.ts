@@ -61,11 +61,18 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
   // 点横幅直接进张峻豪的聊天框，不用自己去翻列表
   await page.locator(".device-banner").click();
   await expect(page.locator(".wx-nav strong")).toHaveText("张峻豪");
-  // 退回桌面时朋友圈还没看过，会再提醒一次（横幅可以反复出现）
+  // 退回桌面时朋友圈还没看过，但解锁提示还要说完，隔 15 秒才提醒
   await page.getByRole("button", { name: "返回", exact: true }).click();
   await page.getByRole("button", { name: "返回桌面", exact: true }).click();
   const nudge = page.locator(".device-banner-body");
-  await expect(nudge).toContainText("朋友圈有新动态");
+  const bannerText = () =>
+    nudge.allTextContents().then((t) => t.join(""));
+  // 刚解锁就回桌面：不能紧跟一条朋友圈提示
+  expect(await bannerText()).not.toContain("朋友圈有新动态");
+  await page.waitForTimeout(6000);
+  expect(await bannerText()).not.toContain("朋友圈有新动态");
+  // 冷却 15 秒之后才弹出来
+  await expect(nudge).toContainText("朋友圈有新动态", { timeout: 20000 });
   await page.waitForTimeout(5000);
   await page.getByRole("button", { name: "打开微信", exact: true }).click();
   await expect(page.locator(".wx-chat-row.locked")).toHaveCount(0);
