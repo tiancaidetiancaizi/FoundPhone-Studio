@@ -3951,6 +3951,18 @@ label {
 .wx-discovery > svg {
   color: #6a8cb9;
 }
+/* 「发现—朋友圈」行里用 left 的头像当引导图标 */
+.wx-discovery .skin-avatar {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.wx-discovery .skin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
 .wx-discovery > span {
   margin-left: auto;
   color: #bbb;

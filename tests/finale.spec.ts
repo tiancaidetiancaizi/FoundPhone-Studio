@@ -32,17 +32,39 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
     "这条对话现在还打不开",
   );
 
-  // 2. 打开任意其它 App 即解锁，并给出微信提示
+  // 2. 桌面上除时钟外的 App 全部点过之后才解锁，并给出微信提示
   await page.getByRole("button", { name: "返回桌面", exact: true }).click();
-  await page.getByRole("button", { name: "打开相册", exact: true }).click();
-  await expect(page.locator(".app-screen:not([inert])")).toHaveCSS(
-    "transform",
-    "none",
-  );
-  await page.getByRole("button", { name: "返回桌面", exact: true }).click();
+  const desktopApps = [
+    "打开微信",
+    "打开备忘录",
+    "打开相册",
+    "打开邮件",
+    "打开论坛",
+    "打开小红书",
+    "打开计算器",
+    "打开设置",
+    "打开地图",
+    "打开文件",
+    "天气小组件",
+    "日历小组件",
+  ];
+  for (const [i, name] of desktopApps.entries()) {
+    await page.getByRole("button", { name, exact: true }).click();
+    await expect(page.locator(".app-screen:not([inert])")).toHaveCSS(
+      "transform",
+      "none",
+    );
+    if (i < desktopApps.length - 1)
+      await page.getByRole("button", { name: "返回桌面", exact: true }).click();
+  }
   await expect(page.locator(".device-banner")).toContainText("张峻豪");
+  await page.getByRole("button", { name: "返回桌面", exact: true }).click();
   await page.getByRole("button", { name: "打开微信", exact: true }).click();
   await expect(page.locator(".wx-chat-row.locked")).toHaveCount(0);
+  // 解锁后「发现」标签上就应有红点引导
+  await expect(
+    page.locator(".wx-bottom [aria-label='发现'] .wx-dot"),
+  ).toBeVisible();
 
   // 3. 读张峻豪：默认停在最后一条消息
   await page.locator(".wx-chat-row").first().click();
@@ -66,7 +88,11 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
   await expect(page.locator(".wx-chat-row").first()).toBeVisible();
   await page.getByRole("button", { name: "发现", exact: true }).click();
   await expect(page.locator(".wx-dot").first()).toBeVisible();
-  await page.locator(".wx-discovery").filter({ hasText: "朋友圈" }).click();
+  // 朋友圈一栏用 left 的头像引导点击
+  const discoverRow = page.locator(".wx-discovery").first();
+  await expect(discoverRow).toContainText("朋友圈");
+  await expect(discoverRow.locator(".skin-avatar")).toBeVisible();
+  await discoverRow.click();
   const post = page.locator(".wx-moment-post");
   await expect(post).toHaveCount(1);
   await expect(post).toContainText("我都会选你");
@@ -74,6 +100,11 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
   await page
     .locator(".phone-screen")
     .screenshot({ path: "docs/images/finale-moment.png" });
+  // 详情页只显示发帖人，不显示具体发表时间
+  await post.click();
+  await expect(page.locator(".detail-meta")).toHaveText("left");
+  await page.getByRole("button", { name: "返回", exact: true }).click();
+  await expect(post).toHaveCount(1);
 
   // 5. 点赞解锁时钟
   await page.locator(".wx-moment-like").click();
@@ -119,5 +150,52 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
   await page
     .locator(".phone-screen")
     .screenshot({ path: "docs/images/finale-reply.png" });
+  expect(errors).toEqual([]);
+});
+
+/**
+ * 探索较慢的路径：玩家不点赞、不点时钟，让时间自然流过 23:59。
+ * 零点一到，时钟自动解锁、自动弹出「生日快乐」并开启回复互动。
+ */
+test("natural midnight unlocks the clock and starts the reply flow", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(240000);
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  const work = await (await request.get("/work.json")).json();
+  work.phone.time = "23:58";
+  await page.route("**/work.json", (route) => route.fulfill({ json: work }));
+  await page.setViewportSize({ width: 393, height: 852 });
+  await page.goto("/");
+  await unlockPhone(page);
+
+  // 不打开任何 App，等时间自然走到 11-19 00:00，left 的消息自动弹出
+  await expect(page.locator(".device-banner")).toContainText("生日快乐", {
+    timeout: 160000,
+  });
+  await expect(page.locator(".status-time")).toHaveText("00:00");
+
+  // 时钟无需点赞即已解锁
+  await page.getByRole("button", { name: "打开时钟", exact: true }).click();
+  await expect(page.locator(".app-screen:not([inert])")).toHaveCSS(
+    "transform",
+    "none",
+  );
+  await page.getByRole("button", { name: "返回桌面", exact: true }).click();
+
+  // 打开 left 的会话，脚本化回复互动可用
+  await page.getByRole("button", { name: "打开微信", exact: true }).click();
+  await page.locator(".wx-chat-row").filter({ hasText: "left" }).click();
+  await expect(page.locator(".skin-bubble").last()).toContainText("生日快乐");
+  const field = page.locator(".wx-finale-field");
+  await expect(field).toBeVisible();
+  await field.click();
+  await expect(field).toHaveText("对不起", { timeout: 8000 });
+  await page.getByRole("button", { name: "发送消息" }).click();
+  await expect(page.locator(".skin-bubble").last()).toContainText("我爱你", {
+    timeout: 8000,
+  });
   expect(errors).toEqual([]);
 });

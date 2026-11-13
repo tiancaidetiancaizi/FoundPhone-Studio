@@ -7,7 +7,7 @@
   "phone": {
     "owner": "zx",
     "date": "2040-11-18",
-    "time": "23:36",
+    "time": "23:45",
     "battery": 46,
     "network": "5G",
     "wallpaper": "apple-wwdc26",
@@ -2435,7 +2435,7 @@
         "likes": 0,
         "comments": [],
         "time": "2040-11-18 23:38",
-        "unlock": "ui:wechat:zjRead",
+        "unlock": "ui:wechat:zjUnlocked",
         "meta": {
           "relative": "2分钟前",
           "newMoment": "true",

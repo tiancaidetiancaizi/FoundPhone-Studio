@@ -325,9 +325,16 @@ export function WeChatSkin(p: SkinProps) {
   const coverSrc = cover.startsWith("data:image/") ? cover : "";
   const typing =
     p.thread === "left" && !!p.ui?.[FINALE.sent] && !p.ui?.[FINALE.replied];
+  // 张峻豪的对话一解锁，「发现」上就挂红点引导玩家去朋友圈
   const hasNewMoment =
-    posts.some((i) => i.meta?.newMoment === "true") &&
+    (posts.some((i) => i.meta?.newMoment === "true") ||
+      (p.finale && !!p.ui?.[FINALE.chatLock])) &&
     !p.ui?.[FINALE.momentsSeen];
+  const momentAvatar =
+    posts.find((i) => i.meta?.newMoment === "true")?.avatar ||
+    // 朋友圈还没解锁时，从 left 的聊天消息里取头像做引导
+    p.items.find((i) => i.title === "left" && i.avatar)?.avatar ||
+    "";
   const seeMoments = () => {
     setMoments(true);
     p.onUi?.(FINALE.momentsSeen, true);
@@ -668,7 +675,11 @@ export function WeChatSkin(p: SkinProps) {
                         : setUtility(String(label))
                     }
                   >
-                    <Glyph size={22} style={{ color: String(color) }} />
+                    {String(label) === "朋友圈" && momentAvatar ? (
+                      <Avatar name="left" src={momentAvatar} />
+                    ) : (
+                      <Glyph size={22} style={{ color: String(color) }} />
+                    )}
                     {String(label)}
                     {label === "朋友圈" && hasNewMoment && (
                       <b className="wx-dot" aria-hidden="true" />

@@ -5,8 +5,10 @@ import type { Runtime } from "./schema";
  * 控制朋友圈、聊天记录的显隐，避免把剧情硬编码进界面。
  */
 export const FINALE = {
-  /** 张峻豪会话：打开过任意其它 App 后解锁 */
+  /** 张峻豪会话：点开过桌面上除时钟外的全部 App 后解锁 */
   chatLock: "zjUnlocked",
+  /** 已点开过的桌面 App（逗号分隔 id） */
+  visited: "visitedApps",
   /** 读完张峻豪的聊天记录 */
   chatRead: "zjRead",
   /** 给 left 的新朋友圈点了赞 */
@@ -21,6 +23,8 @@ export const FINALE = {
   replied: "replied",
 } as const;
 export const uiOf = (s: Runtime, app: string) => s.ui?.[app] ?? {};
-/** 点赞之前，时钟打不开（仅带结局演出的作品） */
+/** 点赞之前（或自然到达零点之前），时钟打不开 */
 export const clockLocked = (s: Runtime, finale: boolean) =>
-  finale && !uiOf(s, "wechat")[FINALE.momentLiked];
+  finale &&
+  !uiOf(s, "wechat")[FINALE.momentLiked] &&
+  !uiOf(s, "clock")[FINALE.midnight];

@@ -236,6 +236,18 @@ function PhoneRuntime({
     const interval = setInterval(() => {
       const previous = runtimeRef.current;
       const next = advance(work, previous, 1000);
+      // 探索较慢的玩家：时间自然流过零点（时间从 23:xx 回落到 00:xx）同样触发结局
+      if (
+        work.phone.finale &&
+        !next.ui?.clock?.[FINALE.midnight] &&
+        next.time < (work.phone.time || "23:45")
+      ) {
+        next.ui = {
+          ...next.ui,
+          clock: { ...next.ui?.clock, [FINALE.midnight]: true },
+        };
+        next.date = "2040-11-19";
+      }
       runtimeRef.current = next;
       const changed =
         next.time !== previous.time ||
@@ -290,21 +302,27 @@ function PhoneRuntime({
     onOpen?.(id);
     if (creator) return;
     const next = dispatch(work, current, "openApp", id);
-    // 打开过微信以外的任意 App 之后，张峻豪那条对话才解锁
-    if (
-      finale &&
-      id !== "clock" &&
-      id !== "wechat" &&
-      !next.ui?.wechat?.[FINALE.chatLock]
-    ) {
-      next.ui = {
-        ...next.ui,
-        wechat: { ...next.ui?.wechat, [FINALE.chatLock]: true },
-      };
-      next.notifications = [
-        ...next.notifications,
-        "微信：张峻豪的对话可以打开了",
-      ];
+    // 桌面上除时钟外的 App 全部点过之后，张峻豪那条对话才解锁
+    if (finale && id !== "clock") {
+      const wui = { ...next.ui?.wechat };
+      const visited = new Set(
+        String(wui[FINALE.visited] ?? "")
+          .split(",")
+          .filter(Boolean),
+      );
+      visited.add(id);
+      wui[FINALE.visited] = [...visited].sort().join(",");
+      const desktop = work.apps
+        .filter((a) => a.installed && a.id !== "clock")
+        .map((a) => a.id);
+      if (!wui[FINALE.chatLock] && desktop.every((a) => visited.has(a))) {
+        wui[FINALE.chatLock] = true;
+        next.notifications = [
+          ...next.notifications,
+          "微信：张峻豪的对话可以打开了",
+        ];
+      }
+      next.ui = { ...next.ui, wechat: wui };
     }
     update(next);
   };
@@ -1011,10 +1029,17 @@ function AppContent({
       ) : (
         <>
           <small className="detail-meta">
-            {detail.time} ·{" "}
-            {detail.meta?.anonymous === "true" ? "匿名用户" : detail.sender}
+            {detail.meta?.relative
+              ? detail.meta?.anonymous === "true"
+                ? "匿名用户"
+                : detail.sender
+              : `${detail.time} · ${
+                  detail.meta?.anonymous === "true" ? "匿名用户" : detail.sender
+                }`}
           </small>
-          <h2>{detail.title}</h2>
+          {!(detail.meta?.relative && detail.title === detail.sender) && (
+            <h2>{detail.title}</h2>
+          )}
           {(detail.media ||
             (["media", "social"].includes(app.engine) &&
               app.id !== "forum")) && <Media item={detail} />}
