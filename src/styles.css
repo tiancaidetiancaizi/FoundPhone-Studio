@@ -3956,6 +3956,7 @@ label {
   width: 26px;
   height: 26px;
   flex: none;
+  margin-left: 0;
 }
 .wx-discovery .skin-avatar img {
   width: 100%;
@@ -3963,7 +3964,7 @@ label {
   object-fit: cover;
   border-radius: 4px;
 }
-.wx-discovery > span {
+.wx-discovery > span:not(.skin-avatar) {
   margin-left: auto;
   color: #bbb;
 }

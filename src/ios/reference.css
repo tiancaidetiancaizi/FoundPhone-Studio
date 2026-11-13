@@ -260,7 +260,7 @@
   color: #111;
   border: 0;
 }
-.ios18 .wechat-ui .wx-discovery > span {
+.ios18 .wechat-ui .wx-discovery > span:not(.skin-avatar) {
   color: #b7b7b7;
   margin-left: auto;
   font-size: 27px;
