@@ -58,6 +58,8 @@ export type SkinProps = {
   onBack: () => void;
   thread: string;
   onThread: (s: string) => void;
+  /** 从顶部横幅点进来时要直接打开的位置 */
+  enter?: { thread?: string; moments?: boolean; nonce: number } | null;
 };
 function Avatar({
   name,
@@ -275,13 +277,20 @@ function FinaleComposer({ onSent }: { onSent: () => void }) {
   );
 }
 export function WeChatSkin(p: SkinProps) {
-  const [tab, setTab] = useState("微信"),
+  const [tab, setTab] = useState(p.enter?.moments ? "发现" : "微信"),
     [query, setQuery] = useState(""),
-    [moments, setMoments] = useState(false),
+    [moments, setMoments] = useState(!!p.enter?.moments),
     [menu, setMenu] = useState(false),
     [searchOpen, setSearchOpen] = useState(false),
     [utility, setUtility] = useState(""),
     [lockedHint, setLockedHint] = useState("");
+  // 点顶部横幅里的「朋友圈有新动态」直接落到朋友圈
+  useEffect(() => {
+    if (!p.enter?.moments) return;
+    setTab("发现");
+    setMoments(true);
+    setUtility("");
+  }, [p.enter]);
   const [readThreads, setReadThreads] = useSkinState<string[]>(
     p,
     "readThreads",

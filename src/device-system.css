@@ -1200,7 +1200,7 @@
   box-shadow: 0 6px 20px #0002;
   animation: banner-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.ios18 .device-banner > span:last-child {
+.ios18 .device-banner-body {
   flex: 1;
   min-width: 0;
   font-size: 15px;
@@ -1210,11 +1210,20 @@
   display: block;
   font-size: 15px;
 }
-.ios18 .device-banner > span > span {
+.ios18 .device-banner-body > span {
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* 横幅可点：右侧小箭头告诉玩家点了会跳走 */
+.ios18 .device-banner-go {
+  align-self: center;
+  flex: none;
+  color: #b0b0b8;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
 }
 @keyframes banner-enter {
   from {

@@ -104,6 +104,11 @@ export function AppIcon({
   );
 }
 type PhoneProps = Omit<Parameters<typeof PhoneRuntime>[0], "deviceLayout">;
+/** 顶部横幅点击后要去的地方 */
+type BannerTarget = { app: string; thread?: string; moments?: boolean };
+type Banner = { text: string; target?: BannerTarget };
+/** 打开 App 时顺带进入某个会话 / 朋友圈 */
+type EnterTarget = { thread?: string; moments?: boolean; nonce: number };
 export function Phone(props: PhoneProps) {
   const deviceLayout = useDeviceLayout(props.work, props.creator);
   return (
@@ -143,8 +148,14 @@ function PhoneRuntime({
   const [keyboard, setKeyboard] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
   const appSnapshots = useRef(new Map<string, HTMLElement>());
-  const [banner, setBanner] = useState("");
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const bannerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const noticesSeen = useRef(0);
+  // 点顶部横幅时要知道跳到哪儿：哪个 App、哪个会话、还是朋友圈
+  const [enter, setEnter] = useState<EnterTarget | null>(null);
+  const enterSeq = useRef(0);
   const [contextApp, setContextApp] = useState("");
   const [deviceScale, setDeviceScale] = useState(0.84);
   const shell = useRef<HTMLDivElement>(null);
@@ -263,9 +274,20 @@ function PhoneRuntime({
   const event = (event: string, target: string) => {
     if (!creator) update(dispatch(work, runtimeRef.current, event, target));
   };
-  const notice = (text: string) => {
-    setBanner(text);
-    setTimeout(() => setBanner(""), 4600);
+  // 通知文本里能看出该跳到哪儿：张峻豪 / left 的会话，或者朋友圈
+  const targetOf = (text: string): BannerTarget => {
+    const appId = notificationContent(text, work.apps).appId;
+    if (appId === "wechat") {
+      if (text.includes("朋友圈")) return { app: "wechat", moments: true };
+      if (/left/i.test(text)) return { app: "wechat", thread: "left" };
+      if (text.includes("张峻豪")) return { app: "wechat", thread: "张峻豪" };
+    }
+    return { app: appId };
+  };
+  const notice = (text: string, target?: BannerTarget) => {
+    setBanner({ text, target: target ?? targetOf(text) });
+    clearTimeout(bannerTimer.current);
+    bannerTimer.current = setTimeout(() => setBanner(null), 4600);
   };
   const captureApp = () => {
     if (!app) return;
@@ -296,6 +318,8 @@ function PhoneRuntime({
     }
     setApp(id);
     setKeyboard(false);
+    // 上一次点横幅带进来的落点只用一次，正常开 App 从首页进
+    setEnter(null);
     setRecent((v) => [id, ...v.filter((a) => a !== id)].slice(0, 8));
     setFolder("");
     setPanel("");
@@ -346,13 +370,44 @@ function PhoneRuntime({
   useEffect(() => {
     const count = s.notifications.length;
     if (!locked && work.phone.notifications && count > noticesSeen.current) {
-      setBanner(s.notifications.at(-1) || "");
-      const timer = setTimeout(() => setBanner(""), 4500);
+      const text = s.notifications.at(-1) || "";
+      setBanner({ text, target: targetOf(text) });
+      clearTimeout(bannerTimer.current);
+      bannerTimer.current = setTimeout(() => setBanner(null), 4500);
       noticesSeen.current = count;
-      return () => clearTimeout(timer);
+      return;
     }
     noticesSeen.current = count;
   }, [s.notifications.length, locked, work.phone.notifications]);
+  // 点顶部横幅直接跳过去，而不是先进通知中心
+  const jump = (b: Banner | null) => {
+    setBanner(null);
+    clearTimeout(bannerTimer.current);
+    const t = b?.target;
+    if (!t) return;
+    // 时钟还锁着的时候点它只会再弹一次「打不开」，不如不响应
+    if (t.app === "clock" && clockLocked(runtimeRef.current, !!work.phone.finale))
+      return;
+    if (app !== t.app) open(t.app);
+    if (t.thread !== undefined || t.moments)
+      setEnter({
+        thread: t.thread,
+        moments: t.moments,
+        nonce: ++enterSeq.current,
+      });
+  };
+  // 解锁之后、朋友圈还没看也没点赞之前，每次退回桌面都再提醒一次
+  const lastApp = useRef("");
+  useEffect(() => {
+    const prev = lastApp.current;
+    lastApp.current = app;
+    if (!ready || creator || !work.phone.finale) return;
+    if (app !== "" || prev === "") return;
+    const wui = s.ui?.wechat ?? {};
+    if (!wui[FINALE.chatLock]) return;
+    if (wui[FINALE.momentLiked] || wui[FINALE.momentsSeen]) return;
+    notice("微信：朋友圈有新动态");
+  }, [app, ready, creator, s.ui, work.phone.finale]);
   const dismissNotice = (index: number) =>
     update({
       ...runtimeRef.current,
@@ -528,6 +583,7 @@ function PhoneRuntime({
                   ]}
                   creator={creator}
                   state={s}
+                  enter={enter}
                   onRead={(id) => event("read", id)}
                   onEdit={(item) => onEdit?.(app, item)}
                   onAdd={() => onAdd?.(app)}
@@ -760,18 +816,21 @@ function PhoneRuntime({
           {banner && !locked && (
             <button
               className="device-banner"
-              onClick={() => {
-                setBanner("");
-                setPanel("notification");
-              }}
+              aria-label={`${notificationContent(banner.text, work.apps).title}：${notificationContent(banner.text, work.apps).body}，点击查看`}
+              onClick={() => jump(banner)}
             >
               <AppIcon
-                id={notificationContent(banner, work.apps).appId}
+                id={notificationContent(banner.text, work.apps).appId}
                 small
               />
-              <span>
-                <strong>{notificationContent(banner, work.apps).title}</strong>
-                <span>{notificationContent(banner, work.apps).body}</span>
+              <span className="device-banner-body">
+                <strong>
+                  {notificationContent(banner.text, work.apps).title}
+                </strong>
+                <span>{notificationContent(banner.text, work.apps).body}</span>
+              </span>
+              <span className="device-banner-go" aria-hidden="true">
+                ›
               </span>
             </button>
           )}
@@ -939,6 +998,7 @@ function AppContent({
   items,
   creator,
   state,
+  enter,
   onRead,
   onEdit,
   onAdd,
@@ -953,6 +1013,7 @@ function AppContent({
   items: Item[];
   creator: boolean;
   state: Runtime;
+  enter?: EnterTarget | null;
   onRead: (id: string) => void;
   onEdit: (item: Item) => void;
   onAdd: () => void;
@@ -963,13 +1024,19 @@ function AppContent({
   work: Work;
 }) {
   const [detail, setDetail] = useState<Item | null>(null);
-  const [thread, setThread] = useState("");
+  const [thread, setThread] = useState(enter?.thread ?? "");
   const [tab, setTab] = useState(app.tabs[0]);
   const [q, setQ] = useState("");
   const [pw, setPw] = useState("");
   const [unlocks, setUnlocks] = useState<string[]>([]);
   const [pwError, setPwError] = useState("");
   const [likes, setLikes] = useState<string[]>([]);
+  // 已经在 App 里时点横幅换会话也生效
+  useEffect(() => {
+    if (!enter) return;
+    setDetail(null);
+    setThread(enter.thread ?? "");
+  }, [enter]);
   const shown = items
     .filter((i) => creator || visible(i, state))
     .filter((i) =>
@@ -1114,6 +1181,7 @@ function AppContent({
               onBack={onBack}
               thread={thread}
               onThread={setThread}
+              enter={enter}
             />
           </Suspense>
         </div>

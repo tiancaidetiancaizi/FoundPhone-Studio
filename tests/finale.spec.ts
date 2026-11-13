@@ -58,13 +58,27 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
       await page.getByRole("button", { name: "返回桌面", exact: true }).click();
   }
   await expect(page.locator(".device-banner")).toContainText("张峻豪");
+  // 点横幅直接进张峻豪的聊天框，不用自己去翻列表
+  await page.locator(".device-banner").click();
+  await expect(page.locator(".wx-nav strong")).toHaveText("张峻豪");
+  // 退回桌面时朋友圈还没看过，会再提醒一次（横幅可以反复出现）
+  await page.getByRole("button", { name: "返回", exact: true }).click();
   await page.getByRole("button", { name: "返回桌面", exact: true }).click();
+  const nudge = page.locator(".device-banner-body");
+  await expect(nudge).toContainText("朋友圈有新动态");
+  await page.waitForTimeout(5000);
   await page.getByRole("button", { name: "打开微信", exact: true }).click();
   await expect(page.locator(".wx-chat-row.locked")).toHaveCount(0);
   // 解锁后「发现」标签上就应有红点引导
   await expect(
     page.locator(".wx-bottom [aria-label='发现'] .wx-dot"),
   ).toBeVisible();
+  await page.getByRole("button", { name: "发现", exact: true }).click();
+  // 朋友圈一栏用 left 的头像引导点击
+  const discoverRow = page.locator(".wx-discovery").first();
+  await expect(discoverRow).toContainText("朋友圈");
+  await expect(discoverRow.locator(".skin-avatar")).toBeVisible();
+  await page.getByRole("button", { name: "微信", exact: true }).click();
 
   // 3. 读张峻豪：默认停在最后一条消息
   await page.locator(".wx-chat-row").first().click();
@@ -83,16 +97,12 @@ test("finale flow: locked chat, new moment, midnight clock and scripted reply", 
     .locator(".phone-screen")
     .screenshot({ path: "docs/images/finale-chat.png" });
 
-  // 4. 读完在朋友圈出现新动态，发现页有红点
+  // 4. 读完再回桌面：横幅又出来，点它直达朋友圈
   await page.locator(".wx-nav button").first().click();
   await expect(page.locator(".wx-chat-row").first()).toBeVisible();
-  await page.getByRole("button", { name: "发现", exact: true }).click();
-  await expect(page.locator(".wx-dot").first()).toBeVisible();
-  // 朋友圈一栏用 left 的头像引导点击
-  const discoverRow = page.locator(".wx-discovery").first();
-  await expect(discoverRow).toContainText("朋友圈");
-  await expect(discoverRow.locator(".skin-avatar")).toBeVisible();
-  await discoverRow.click();
+  await page.getByRole("button", { name: "返回桌面", exact: true }).click();
+  await expect(nudge).toContainText("朋友圈有新动态");
+  await page.locator(".device-banner").click();
   const post = page.locator(".wx-moment-post");
   await expect(post).toHaveCount(1);
   await expect(post).toContainText("我都会选你");
